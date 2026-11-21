@@ -1,0 +1,12 @@
+{"name": "Floods Outro",
+ "blocks": {
+   "DST": {"effect": "Green OD", "params": {"Gain": 0, "Tone": 55, "Volume": 80}},
+   "AMP": {"effect": "EV 51", "params": {"Gain": 68, "Bass": 55, "Middle": 55, "Treble": 58, "Presence": 60, "Volume": 55}},
+   "NR":  {"effect": "Gate 1", "params": {"Threshold": 25}},
+   "CAB": {"effect": "UK 75", "params": {"Low Cut": 90, "High Cut": 8000}},
+   "EQ":  {"effect": "Guitar EQ 1", "params": {"400Hz": -4, "1.6kHz": 5}},
+   "MOD": {"effect": "Jet", "on": false},
+   "DLY": {"effect": "Digital Delay S", "params": {"Mix": 28, "Time": 500, "Feedback": 35}},
+   "RVB": {"effect": "Hall", "params": {"Mix": 20, "Decay": 55}},
+   "VOL": {"effect": "Volume"}
+ }}
