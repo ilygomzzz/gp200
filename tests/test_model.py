@@ -130,6 +130,23 @@ class PedalQueue(unittest.TestCase):
         self.assertEqual(RecDev.log[0], 50)
         self.assertEqual(RecDev.log[1:], list(range(10)))
 
+    def test_hold_leaves_port_closed(self):  # the CLI needs the port while Claude runs
+        app = QCoreApplication.instance() or QCoreApplication([])
+        opened = []
+        p = m.Pedal(lambda: opened.append(1) or RecDev())
+        held = []
+        p.held.connect(lambda: held.append(1))
+        p.hold_for_claude()
+        for _ in range(50):
+            app.processEvents()
+            time.sleep(0.01)
+            if held:
+                break
+        p.release_claude()
+        p.stop()
+        self.assertEqual(held, [1])
+        self.assertEqual(opened, [])
+
 
 if m:
     class FakePedal(QObject):

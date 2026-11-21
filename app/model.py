@@ -151,7 +151,7 @@ class Pedal(QObject):
                     self.keys.pop(job[2], None)
             fn, area, _ = job
             try:
-                if fn is self._hold:
+                if fn == self._hold:  # bound methods: `is` is never true
                     fn(None)
                     continue
                 with MIDI:
