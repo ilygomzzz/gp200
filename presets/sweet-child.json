@@ -1,0 +1,11 @@
+{"name": "Sweet Child",
+ "blocks": {
+   "DST": {"effect": "Green OD", "params": {"Gain": 10, "Tone": 45, "Volume": 70}},
+   "AMP": {"effect": "UK 800", "params": {"Gain": 62, "Bass": 55, "Middle": 70, "Treble": 52, "Presence": 40, "Volume": 55}},
+   "NR":  {"effect": "Gate 1", "params": {"Threshold": 15}},
+   "CAB": {"effect": "UK 75", "params": {"Low Cut": 80, "High Cut": 7500}},
+   "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": 4, "800Hz": 8, "4kHz": -8}},
+   "DLY": {"effect": "BBD Delay S", "params": {"Mix": 15, "Time": 500, "Feedback": 18}},
+   "RVB": {"effect": "Room", "params": {"Mix": 15, "Decay": 40}},
+   "VOL": {"effect": "Volume"}
+ }}
