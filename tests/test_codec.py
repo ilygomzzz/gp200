@@ -24,13 +24,13 @@ class Codec(unittest.TestCase):
         self.assertEqual(g.msg_read(0).hex(" "), "f0 21 25 7e 47 50 2d 32 11 10 " + "00 " * 8 + "04 00 00 00 01 00 00 00 00 00 00 00 01 00 00 00 04 00 00 00 00 00 00 00 00 00 00 f7")
 
     def test_slot_labels(self):
-        self.assertEqual([g.slot_label(s) for s in (0, 3, 4, 100)], ["1A", "1D", "2A", "26A"])
-        self.assertEqual(g.parse_slot("26a"), 100)
+        self.assertEqual([g.slot_label(s) for s in (0, 2, 3, 98, 99, 254)], ["1A", "1C", "2A", "33C", "34A", "85C"])
+        self.assertEqual(g.parse_slot("34b"), 100)
 
     def test_decode_reads_chain_order_from_routing_bytes(self):
         raw = bytearray(1176)
         raw[106:108] = b"\x03\x06"
-        raw[108:119] = bytes([0, 4, 1, 2, 8, 9, 3, 5, 6, 7, 10])  # captured from slot 26B on hardware
+        raw[108:119] = bytes([0, 4, 1, 2, 8, 9, 3, 5, 6, 7, 10])  # captured from slot 34C (index 101) on hardware
         for pos in range(11):
             raw[120 + pos * 72 + 4] = pos
         p = g.decode_preset(bytes(raw))

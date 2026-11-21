@@ -3,11 +3,11 @@
 Read, create and write presets on a **Valeton GP-200 / GP-200JR** from Linux over USB MIDI — no Windows editor, no drivers, Python stdlib only.
 
 ```
-gp200 list 1A-26D                 # slot names
-gp200 show 26A                    # chain of a slot (--json for the full preset)
+gp200 list 1A-33C                 # slot names
+gp200 show 34B                    # chain of a slot (--json for the full preset)
 gp200 effects AMP -q marshall -p  # 305-effect catalog with real-gear names and params
-gp200 write 26A preset.json       # backup → write → verify by readback (-n = dry run)
-gp200 select 26A                  # switch the pedal to a slot
+gp200 write 34B preset.json       # backup → write → verify by readback (-n = dry run)
+gp200 select 34B                  # switch the pedal to a slot
 gp200 snaptone 3                  # upload a NAM capture converted in VLTN Tone Studio as SnapTone 3
 ```
 
