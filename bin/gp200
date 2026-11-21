@@ -158,7 +158,12 @@ class Device:
 # ---------- preset building ----------
 def find_effect(block, name):
     want = name.strip().lower()
-    hits = [(eid, e) for eid, e in EFFECTS.items() if e["module"] == block and e["name"].lower() == want]
+    if m := re.fullmatch(r"snaptone\s*(\d+)", want):  # catalog names all 10 just "SnapTone"
+        eid = 0x0F000000 + int(m[1]) - 1
+        if EFFECTS.get(eid, {}).get("module") != block:
+            sys.exit(f"SnapTone {m[1]} is not a {block} effect (1-5 = AMP, 6-10 = DST)")
+        return eid, EFFECTS[eid]
+    hits =[(eid, e) for eid, e in EFFECTS.items() if e["module"] == block and e["name"].lower() == want]
     if not hits:
         sys.exit(f"unknown {block} effect {name!r} — see: gp200 effects {block}")
     return hits[0]
@@ -324,6 +329,131 @@ def cmd_select(a):
     Device().send(msg_select(parse_slot(a.slot)), 0.1)
 
 
+# ---------- SnapTones (NAM captures) ----------
+# Record layout from VLTN Tone Studio (github.com/grzmol/VLTN-Tone-Studio, GPL-3.0), gp200/lib/protocol.mjs + snaptone.mjs.
+SNAP_DIR = Path.home() / ".local/share/gp200/snaptones"
+VLTN_LOG = Path.home() / ".config/VLTN Tone Studio/logs/session.log"
+SNAP_BLOB, SNAP_FIELD = 0x1288, 0x2000  # GP-200 VTSI blob (1024 IR taps), zero-padded into the upload record
+SNAP_GAP = 0.05  # VLTN's 10 ms/frame makes the JR drop frames (no 0x1014 result); 50 ms verified on hardware
+
+
+def frames(payload, cmd=0x12, chunk=183):
+    """Multi-chunk framing: LEN/OFF are 14-bit decoded byte counts."""
+    n = len(payload)
+    return [bytes(HDR + [cmd, n & 0x7F, n >> 7 & 0x7F, o & 0x7F, o >> 7 & 0x7F] + nib(payload[o:o + chunk]) + [0xF7])
+            for o in range(0, max(n, 1), chunk)]
+
+
+def tlv(rtype, data):
+    return struct.pack("<HH", rtype, len(data)) + bytes(data)
+
+
+def crc16_modbus(data):
+    crc = 0xFFFF
+    for b in data:
+        crc ^= b
+        for _ in range(8):
+            crc = crc >> 1 ^ 0xA001 if crc & 1 else crc >> 1
+    return crc
+
+
+def check_blob(b):
+    if len(b) != SNAP_BLOB or b[:4] != b"VTSI" or struct.unpack_from("<I", b, 4)[0] != SNAP_BLOB:
+        return f"not a {SNAP_BLOB}-byte GP-200 VTSI SnapTone"
+    if crc16_modbus(b[12:]) != (b[8] << 8 | b[9]):
+        return "CRC mismatch"
+    return None
+
+
+def snap_record(slot, name, blob):
+    field = blob + bytes(SNAP_FIELD - len(blob))
+    return tlv(0x1013, struct.pack("<HHI", slot, 0, sum(field)) + name.encode("ascii")[:16].ljust(16, b"\0") + field)
+
+
+def blob_from_vltn(log=VLTN_LOG):
+    """Last complete SnapTone upload in VLTN's session log -> (name, blob). VLTN can't export blobs; its log has every frame."""
+    msgs, cur = [], {}
+    for line in log.read_text(errors="replace").splitlines():
+        hx = line.rsplit("]", 1)[-1].strip()
+        if " Out " not in line or not hx.startswith("F0 21 25 7E 47 50 2D 32 12"):
+            continue
+        f = bytes.fromhex(hx)
+        n, off = f[9] | f[10] << 7, f[11] | f[12] << 7
+        if off == 0:
+            cur = {}
+        cur[off] = unnib(f[13:-1])
+        data = b"".join(cur[k] for k in sorted(cur))
+        if len(data) == n and data[:2] == b"\x13\x10":
+            msgs.append(data)
+    if not msgs:
+        sys.exit(f"no SnapTone upload found in {log} (convert + 'Write' a capture in VLTN Tone Studio first)")
+    rec = msgs[-1][4:]
+    name = rec[8:24].split(b"\0")[0].decode("ascii", "replace")
+    return name, rec[24:24 + SNAP_BLOB]
+
+
+def snap_names(dev):
+    """10 SnapTone slots -> [(name, has_data)] ; None when a slot doesn't answer."""
+    out = []
+    for s in range(10):
+        dev.drain()
+        for f in frames(tlv(0x1012, struct.pack("<HH", s, 1) + bytes(20)), cmd=0x11):
+            dev.send(f)
+        got = None
+        for m in dev.messages(0.5):
+            d = unnib(m[13:-1])
+            if d[:2] == b"\x12\x10" and struct.unpack_from("<H", d, 4)[0] == s:
+                got = (d[12:28].split(b"\0")[0].decode("ascii", "replace"), struct.unpack_from("<H", d, 6)[0] == 0)
+                break
+        out.append(got)
+    return out
+
+
+def snap_label(s):
+    return f"{s + 1:>2} {'AMP' if s < 5 else 'DST'}"
+
+
+def cmd_snaptone(a):
+    if a.slot is None:  # list
+        for s, n in enumerate(snap_names(Device())):
+            print(f"{snap_label(s)}  {'(no answer)' if n is None else n[0] if n[1] else '(empty)'}")
+        return
+    if not (a.slot.isdigit() and 1 <= int(a.slot) <= 10):
+        sys.exit("SnapTone slot is 1..10 (1-5 AMP, 6-10 DST)")
+    slot = int(a.slot) - 1
+    if a.source in (None, "vltn"):
+        name, blob = blob_from_vltn()
+        SNAP_DIR.mkdir(parents=True, exist_ok=True)
+        keep = SNAP_DIR / f"{re.sub(r'[^A-Za-z0-9_-]+', '_', name) or 'snaptone'}.vtsi"
+        keep.write_bytes(blob)
+        print(f"from VLTN log: {name!r} -> saved {keep}", file=sys.stderr)
+    else:
+        blob, name = Path(a.source).read_bytes(), Path(a.source).stem
+    name = re.sub(r"[^ -~]", "", a.name or name)[:16]
+    if err := check_blob(blob):
+        sys.exit(f"refusing to upload: {err}")
+    dev = Device()
+    cur = snap_names(dev)[slot]
+    if cur and cur[1] and not a.force:
+        sys.exit(f"SnapTone {slot + 1} holds {cur[0]!r} and SnapTones can't be read back: pick an empty slot or pass --force")
+    if a.dry_run:
+        print(f"would upload {name!r} to SnapTone {snap_label(slot)} (now {cur[0] if cur and cur[1] else 'empty'})"); return
+    dev.drain()
+    for f in frames(snap_record(slot, name, blob)):
+        dev.send(f, SNAP_GAP)
+    for m in dev.messages(10):
+        d = unnib(m[13:-1])
+        if d[:2] == b"\x14\x10" and struct.unpack_from("<H", d, 4)[0] == slot:
+            if struct.unpack_from("<H", d, 6)[0] != 1:
+                sys.exit(f"pedal rejected the SnapTone (status {struct.unpack_from('<H', d, 6)[0]})")
+            break
+    else:
+        sys.exit("no upload result from the pedal within 10 s")
+    got = snap_names(dev)[slot]
+    print(f"OK: SnapTone {snap_label(slot)} = {got[0] if got else name!r} — use it in the {'AMP' if slot < 5 else 'DST'} block "
+          f"(effect id {0x0F000000 + slot:#x})")
+
+
 def main():
     ap = argparse.ArgumentParser(prog="gp200", description=__doc__.splitlines()[0])
     sp = ap.add_subparsers(required=True)
@@ -335,6 +465,11 @@ def main():
     p = sp.add_parser("write", help="write preset JSON to slot (auto-backup + readback verify)")
     p.add_argument("slot"); p.add_argument("file", help="preset JSON, or - for stdin"); p.add_argument("-n", "--dry-run", action="store_true"); p.set_defaults(f=cmd_write)
     p = sp.add_parser("select", help="switch the pedal to a slot"); p.add_argument("slot"); p.set_defaults(f=cmd_select)
+    p = sp.add_parser("snaptone", help="list SnapTone slots, or upload: snaptone 3 [vltn|FILE.vtsi]")
+    p.add_argument("slot", nargs="?", help="1-10 (1-5 AMP, 6-10 DST); omit to list")
+    p.add_argument("source", nargs="?", help="'vltn' (default: last capture converted in VLTN Tone Studio) or a .vtsi file")
+    p.add_argument("--name"); p.add_argument("--force", action="store_true", help="overwrite a non-empty slot")
+    p.add_argument("-n", "--dry-run", action="store_true"); p.set_defaults(f=cmd_snaptone)
     a = ap.parse_args()
     a.f(a)
 

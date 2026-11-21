@@ -15,6 +15,7 @@ Project: `~/projects/gp200` — read its `CLAUDE.md` first for the CLI, preset J
 - "Qué hay en X" → `gp200 show X`. "Lista" → `gp200 list 1A-26D`.
 - Restore / undo → `ls ~/projects/gp200/backups/` and `gp200 write <slot> <backup.json>`.
 - Copy a slot → `gp200 show A --json > presets/x.json`, then write it to B.
+- NAM capture / TONE3000 tone / "SnapTone" → `gp200 snaptone` lists the 10 slots (1-5 AMP, 6-10 DST). Conversion NAM→SnapTone is done in VLTN Tone Studio (app menu): the user picks the capture there and presses Write (on the JR it times out — expected). Then `gp200 snaptone <N>` (empty slot, ask which) re-uploads the last converted capture from VLTN's log at a pace the JR accepts, and keeps a copy in `~/.local/share/gp200/snaptones/*.vtsi` (re-upload: `gp200 snaptone <N> file.vtsi`). Close VLTN first (it holds the MIDI port). Never `--force` over a non-empty slot without the user's explicit OK: SnapTones can't be read back. Use it in a preset as `{"effect": "SnapTone <N>"}` in AMP (1-5) or DST (6-10).
 
 ## If something fails
 - "GP-200 not found" → pedal unplugged/off; ask them to connect it.

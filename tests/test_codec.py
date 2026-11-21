@@ -38,6 +38,20 @@ class Codec(unittest.TestCase):
         self.assertEqual(p["fxloop"], [3, 6])
         self.assertTrue(any("order" in x for x in g.diff([], "", p, list(range(11)))))
 
+    def test_snaptone_upload_framing(self):
+        blob = bytearray(g.SNAP_BLOB)
+        blob[:8] = b"VTSI" + g.SNAP_BLOB.to_bytes(4, "little")
+        crc = g.crc16_modbus(blob[12:])
+        blob[8:10] = bytes([crc >> 8, crc & 0xFF])
+        self.assertIsNone(g.check_blob(bytes(blob)))
+        self.assertEqual(g.crc16_modbus(b"123456789"), 0x4B37)
+        fr = g.frames(g.snap_record(1, "1965WRM2", bytes(blob)))
+        # same shape as VLTN's verified upload: 45 frames, LEN 0x201C, record 0x1013, last chunk 168 bytes
+        self.assertEqual((len(fr), fr[0][9:13], fr[0][13:17]), (45, bytes([0x1C, 0x40, 0, 0]), bytes([1, 3, 1, 0])))
+        self.assertEqual([len(f) for f in fr[:1] + fr[-1:]], [380, 350])
+        blob[20] ^= 1
+        self.assertEqual(g.check_blob(bytes(blob)), "CRC mismatch")
+
     def test_build_rejects_bad_input(self):
         old = {"name": "x", "fxloop": [4, 4], "blocks": {b: {"effect": "#0x0", "on": False, "params": {}} for b in g.BLOCKS}}
         for bad in ({"name": "a" * 17}, {"blocks": {"AMP": {"effect": "Nope"}}}, {"blocks": {"AMP": {"effect": "UK 800", "params": {"Gain": 500}}}},

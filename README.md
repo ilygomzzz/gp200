@@ -8,6 +8,7 @@ gp200 show 26A                    # chain of a slot (--json for the full preset)
 gp200 effects AMP -q marshall -p  # 305-effect catalog with real-gear names and params
 gp200 write 26A preset.json       # backup → write → verify by readback (-n = dry run)
 gp200 select 26A                  # switch the pedal to a slot
+gp200 snaptone 3                  # upload a NAM capture converted in VLTN Tone Studio as SnapTone 3
 ```
 
 Presets are small JSON files (see `CLAUDE.md` for the format), e.g.
@@ -24,4 +25,4 @@ It also ships a [Claude Code](https://claude.com/claude-code) skill (`.claude/sk
 Tested on a GP-200JR (USB `84ef:0180`). Setup: user in the `audio` group, `ln -s $PWD/bin/gp200 ~/.local/bin/`.
 
 ## Credits & license
-The SysEx protocol and effect tables come from the reverse-engineering work in [phash/gp200editor (Preset Forge)](https://github.com/phash/gp200editor), GPL-3.0. This project is GPL-3.0 too.
+The SysEx protocol and effect tables come from the reverse-engineering work in [phash/gp200editor (Preset Forge)](https://github.com/phash/gp200editor), GPL-3.0, and SnapTone upload from [grzmol/VLTN-Tone-Studio](https://github.com/grzmol/VLTN-Tone-Studio), GPL-3.0. This project is GPL-3.0 too.
