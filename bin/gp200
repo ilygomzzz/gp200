@@ -272,18 +272,25 @@ def cmd_list(a):
         print(f"{slot_label(s):>4}  {raw[28:44].split(b'\0')[0].decode('ascii', 'replace')}", flush=True)
 
 
+def show_lines(p):
+    """Human view of a decoded preset (shared with the app)."""
+    out = []
+    for b, blk in p["blocks"].items():
+        info = next((e for e in EFFECTS.values() if e["name"] == blk["effect"]), {"params": []})
+        named = {x["name"] for x in info["params"]}
+        ps = ", ".join(f"{k}={v:g}" for k, v in blk["params"].items() if k in named)
+        out.append(f"  {'ON ' if blk['on'] else 'off'} {b:<4} {blk['effect']:<16} {ps}")
+    if "order" in p:
+        out.append("  order: " + " > ".join(p["order"]))
+    return out
+
+
 def cmd_show(a):
     p = decode_preset(Device().read(parse_slot(a.slot)))
     if a.json:
         return print(json.dumps(p, indent=1))
     print(f"{a.slot}: {p['name']}" + (f"  (by {p['author']})" if p["author"] else ""))
-    for b, blk in p["blocks"].items():
-        info = next((e for e in EFFECTS.values() if e["name"] == blk["effect"]), {"params": []})
-        named = {p["name"] for p in info["params"]}
-        ps = ", ".join(f"{k}={v:g}" for k, v in blk["params"].items() if k in named)
-        print(f"  {'ON ' if blk['on'] else 'off'} {b:<4} {blk['effect']:<16} {ps}")
-    if "order" in p:
-        print("  order:", " > ".join(p["order"]))
+    print("\n".join(show_lines(p)))
 
 
 def cmd_effects(a):

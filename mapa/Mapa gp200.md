@@ -11,3 +11,4 @@ Herramienta para la pedalera Valeton GP-200JR en Linux: leer, crear y escribir p
 - Slots: 3 por banco (A-C), 85 bancos; 1A–33C de fábrica, 34A–85B libres
 - Repo público: https://github.com/ilygomzzz/gp200 (clonado por `~/Vault/bootstrap.sh`)
 - SnapTones (capturas NAM de TONE3000): se convierten en VLTN Tone Studio y se suben con `gp200 snaptone N` (la JR necesita ir más lento que VLTN); copias en `~/.local/share/gp200/snaptones/`. App: [VLTN Tone Studio](https://github.com/grzmol/VLTN-Tone-Studio) (`~/Applications/vltn-tone-studio.AppImage`, en el menú de apps; señal de prueba en `~/.local/share/gp200/nam_input_wav.wav`)
+- App de escritorio: `gp200-app` (menú de apps «GP-200JR»): lista de presets + chat con Claude. Specs en `specs/` (001 hecha; 002 tablaturas→preset; 003 aprender guitarra).

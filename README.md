@@ -20,6 +20,8 @@ Presets are small JSON files (see `CLAUDE.md` for the format), e.g.
             "CAB": {"effect": "UK GRN 2"}, "VOL": {"effect": "Volume"}}}
 ```
 
+`gp200-app` opens a desktop app (PyQt6) with the preset list and a chat with Claude.
+
 It also ships a [Claude Code](https://claude.com/claude-code) skill (`.claude/skills/gp200`): ask "quiero un sonido tipo X", it asks for a slot, designs the chain and writes it.
 
 Tested on a GP-200JR (USB `84ef:0180`). Setup: user in the `audio` group, `ln -s $PWD/bin/gp200 ~/.local/bin/`.

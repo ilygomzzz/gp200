@@ -10,6 +10,8 @@ User-facing replies in Spanish; code, docs, commits in English.
 - `presets/` — preset JSONs Claude authored (keep them: they are the "source" of what is on the pedal).
 - `backups/` — automatic dump of a slot before every `write` (`<timestamp>-<slot>.json`); restorable with `gp200 write <slot> backups/<file>`.
 - `tests/test_codec.py` — offline codec check: `python3 -m unittest discover tests`.
+- `app/gp200_app.py` — PyQt6 desktop app (Presets + Chat tabs), launcher `bin/gp200-app` (symlinked in `~/.local/bin`, menu entry `~/.local/share/applications/gp200.desktop`). Loads `bin/gp200` as a module; raw MIDI guarded by one lock. `tests/test_app.py` covers its pure helpers.
+- `specs/NNN-name/spec.md` — **app flow**: every app change = spec (what/why + acceptance) → implement → verify on hardware → commit. Roadmap: 001 shell (done), 002 tabs→preset (GP files from Ultimate Guitar, alphaTab view, scratch slot 85C/85B, patch tempo), 003 guitar trainer (pitch detection on `gp200_stereo_clean`).
 
 ## CLI
 ```
