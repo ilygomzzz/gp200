@@ -85,6 +85,20 @@ class Prompts(unittest.TestCase):
         self.assertIsNone(hub.session("34B").session_id)
         self.assertIsNone(hub.session("global").session_id)
 
+    def test_failed_start_finishes(self):  # else the hub never releases the pedal ("busy" forever)
+        app = QCoreApplication.instance() or QCoreApplication([])
+        s, got = chat.ChatSession(), []
+        s.finished.connect(got.append)
+        with tempfile.TemporaryDirectory() as d, mock.patch.dict(os.environ, {"PATH": d, "HOME": d}):
+            s.start("hi", "sys")
+            for _ in range(100):
+                app.processEvents()
+                if got:
+                    break
+                time.sleep(0.01)
+        self.assertEqual(got, [[]])
+        self.assertIn("No se pudo arrancar claude", s.html)
+
     def test_store_roundtrip_corrupt_and_failure(self):
         with tempfile.TemporaryDirectory() as d:
             st = chat.ChatStore(Path(d) / "chats.json")

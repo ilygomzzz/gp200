@@ -124,7 +124,13 @@ class ChatSession(QObject):
         self.proc.setWorkingDirectory(str(ROOT))
         self.proc.readyReadStandardOutput.connect(self._read)
         self.proc.finished.connect(self._done)
+        self.proc.errorOccurred.connect(self._error)
         self.proc.start("claude", args)
+
+    def _error(self, e):
+        if e == QProcess.ProcessError.FailedToStart:  # no `finished` follows: end here or the pedal stays held
+            self.say("⚠", f"No se pudo arrancar claude: {self.proc.errorString()}", "danger")
+            self._done(0, None)
 
     def _read(self):
         self.buf += bytes(self.proc.readAllStandardOutput())
