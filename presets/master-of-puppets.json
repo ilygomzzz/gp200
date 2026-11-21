@@ -1,0 +1,13 @@
+{"name": "Master Puppets",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 0, "Tone": 50, "Volume": 80}},
+  "AMP": {"effect": "Mess2C+ 1", "params": {"Gain": 70, "Presence": 60, "Volume": 70, "Bass": 35, "Middle": 45, "Treble": 70}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 40, "Attack": 10, "Release": 15}},
+  "CAB": {"effect": "Mess", "params": {"Low Cut": 80, "High Cut": 8000}},
+  "EQ":  {"effect": "Mess EQ", "params": {"80Hz": 15, "240Hz": 5, "750Hz": -20, "2.2kHz": 10, "6.6kHz": 12}},
+  "MOD": {"effect": "A-Chorus", "on": false},
+  "DLY": {"effect": "BBD Delay S", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 8, "Pre Delay": 10, "Decay": 10}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","DST","WAH","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

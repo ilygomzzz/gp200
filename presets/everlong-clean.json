@@ -1,0 +1,13 @@
+{"name": "Everlong - clean",
+ "blocks": {
+  "PRE": {"effect": "COMP4", "params": {"Sustain": 30, "Attack": 45, "Volume": 50, "Clipping": 0}},
+  "AMP": {"effect": "Foxy 30N", "params": {"Gain": 40, "Tone Cut": 35, "Volume": 55, "Bright": "ON"}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 35, "Attack": 25, "Release": 40}},
+  "CAB": {"effect": "FOXY 2", "params": {"Low Cut": 80, "High Cut": 8000}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -2, "400Hz": -2, "800Hz": 4, "1.6kHz": 6, "4kHz": 3}},
+  "MOD": {"effect": "Detune", "params": {"Detune": 8, "Wet": 22, "Dry": 80}},
+  "DLY": {"effect": "Digital Delay S", "on": false},
+  "RVB": {"effect": "Studio", "params": {"Mix": 16, "Pre Delay": 15, "Decay": 30, "Hi Damp": 55, "Mod": 30}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

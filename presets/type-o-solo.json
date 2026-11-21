@@ -1,0 +1,14 @@
+{"name": "Type O Negative",
+ "blocks": {
+  "PRE": {"effect": "Pitch", "params": {"Hi Pitch": 0, "Low Pitch": -5, "Dry": 0, "Hi Vol": 0, "Low Vol": 100}, "on": false},
+  "DST": {"effect": "Green OD", "params": {"Gain": 10, "Tone": 60, "Volume": 78}},
+  "AMP": {"effect": "Solo100 LD", "params": {"Gain": 58, "Presence": 58, "Volume": 55, "Bass": 45, "Middle": 68, "Treble": 60}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 35, "Attack": 25, "Release": 40}},
+  "CAB": {"effect": "Solo", "params": {"Volume": 45, "Low Cut": 85, "High Cut": 7500}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -3, "400Hz": 0, "800Hz": 5, "1.6kHz": 4, "4kHz": 0}},
+  "MOD": {"effect": "G-Chorus", "params": {"Depth": 40, "Rate": 0.8, "Volume": 45}, "on": false},
+  "DLY": {"effect": "Analog", "params": {"Mix": 12, "Time": 500, "Feedback": 20}},
+  "RVB": {"effect": "Hall", "params": {"Mix": 15, "Pre Delay": 20, "Decay": 30}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","NR","DST","WAH","AMP","CAB","EQ","MOD","DLY","RVB","VOL"]}

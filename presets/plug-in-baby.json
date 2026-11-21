@@ -1,0 +1,13 @@
+{"name": "Plug In Baby",
+ "blocks": {
+  "DST": {"effect": "Red Haze", "params": {"Fuzz": 90, "Volume": 60}},
+  "AMP": {"effect": "UK 800", "params": {"Gain": 40, "Presence": 65, "Volume": 62, "Bass": 40, "Middle": 65, "Treble": 65}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 45, "Attack": 10, "Release": 15}},
+  "CAB": {"effect": "UK LD", "params": {"Low Cut": 100, "High Cut": 8000}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -4, "400Hz": 0, "800Hz": 4, "1.6kHz": 6, "4kHz": 2}},
+  "MOD": {"effect": "Jet", "on": false},
+  "DLY": {"effect": "BBD Delay S", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 8, "Pre Delay": 10, "Decay": 12}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

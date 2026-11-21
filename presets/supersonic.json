@@ -1,0 +1,13 @@
+{"name": "SUPERSONIC RYTHM",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 25, "Tone": 55, "Volume": 75}},
+  "AMP": {"effect": "UK 800", "params": {"Gain": 62, "Presence": 55, "Volume": 68, "Bass": 48, "Middle": 70, "Treble": 58}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 35, "Attack": 25, "Release": 50}},
+  "CAB": {"effect": "UK GRN 2", "params": {"Low Cut": 85, "High Cut": 6500}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": 0, "400Hz": 3, "800Hz": 4, "1.6kHz": 2, "4kHz": -1}},
+  "MOD": {"effect": "Detune", "params": {"Detune": 8, "Wet": 25, "Dry": 80}},
+  "DLY": {"effect": "Vintage Rack", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 12, "Pre Delay": 20, "Decay": 25}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

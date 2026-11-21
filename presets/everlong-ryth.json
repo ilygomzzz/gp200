@@ -1,0 +1,13 @@
+{"name": "Everlong - Ryth",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 5, "Tone": 55, "Volume": 80}},
+  "AMP": {"effect": "Mess DualV", "params": {"Gain": 64, "Presence": 55, "Volume": 62, "Bass": 52, "Middle": 58, "Treble": 60}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 45, "Attack": 25, "Release": 25}},
+  "CAB": {"effect": "Mess", "params": {"Low Cut": 85, "High Cut": 6500}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -4, "400Hz": 2, "800Hz": 7, "1.6kHz": 5, "4kHz": 1}},
+  "MOD": {"effect": "Detune", "params": {"Detune": 10, "Wet": 30, "Dry": 80}},
+  "DLY": {"effect": "BBD Delay S", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 10, "Pre Delay": 10, "Decay": 12}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

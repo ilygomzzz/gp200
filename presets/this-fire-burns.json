@@ -1,0 +1,13 @@
+{"name": "This Fire Burns",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 0, "Tone": 65, "Volume": 90}},
+  "AMP": {"effect": "EV 51", "params": {"Gain": 60, "Volume": 55, "Bass": 55, "Middle": 55, "Treble": 62, "Presence": 60}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 50, "Attack": 5, "Release": 10}},
+  "CAB": {"effect": "Mess", "params": {"Low Cut": 90, "High Cut": 7500}},
+  "EQ":  {"effect": "Mess EQ", "params": {"80Hz": 0, "240Hz": -8, "750Hz": 5, "2.2kHz": 6, "6.6kHz": 0}},
+  "MOD": {"effect": "G-Chorus", "on": false},
+  "DLY": {"effect": "Digital Delay S", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 8, "Pre Delay": 10, "Decay": 10}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

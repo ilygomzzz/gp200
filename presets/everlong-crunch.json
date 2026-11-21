@@ -1,0 +1,13 @@
+{"name": "Everlong - Crunc",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 15, "Tone": 60, "Volume": 75}},
+  "AMP": {"effect": "Foxy 30TB", "params": {"Gain": 62, "Tone Cut": 40, "Volume": 55, "Bass": 50, "Treble": 60, "Char": "Hot"}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 45, "Attack": 25, "Release": 30}},
+  "CAB": {"effect": "FOXY 2", "params": {"Low Cut": 80, "High Cut": 7500}},
+  "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -2, "400Hz": 0, "800Hz": 8, "1.6kHz": 5, "4kHz": 2}},
+  "MOD": {"effect": "Detune", "params": {"Detune": -10, "Wet": 30, "Dry": 80}},
+  "DLY": {"effect": "BBD Delay S", "on": false},
+  "RVB": {"effect": "Room", "params": {"Mix": 12, "Pre Delay": 10, "Decay": 14}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}
