@@ -9,3 +9,5 @@ Herramienta para la pedalera Valeton GP-200JR en Linux: leer, crear y escribir p
 - Presets creados → `../presets/`; copias automáticas antes de cada escritura → `../backups/`
 - Protocolo: basado en [Preset Forge](https://github.com/phash/gp200editor) (GPL-3.0)
 - Slots: 1A–25C de fábrica, 25D–64C libres
+- Repo público: https://github.com/ilygomzzz/gp200 (clonado por `~/Vault/bootstrap.sh`)
+- SnapTones (capturas NAM de TONE3000): no los hace `gp200`; usar [VLTN Tone Studio](https://github.com/grzmol/VLTN-Tone-Studio) (AppImage Linux)

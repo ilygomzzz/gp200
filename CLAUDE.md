@@ -42,7 +42,7 @@ gp200 select 26A                # switch the pedal to that slot
 - Slots 1A–25C factory presets; 25D–64C empty (named "It's GP-200JR"); 64D does not answer reads; 64C name reads oddly ("Jt's") — avoid both.
 - Chain order is stored in decoded slot bytes [108:119] (block indices in playback order); [106:108] = FX loop send/return; [104] = slot number. Block records at 120+72·i stay in fixed PRE..VOL order. Reorder (sub=0x20) + fxloop verified writing slot 26B.
 - Write = select slot → per block effect-change, 400 ms settle, params (40 ms apart, param 0 resent last), toggle → second param pass → reorder → save-commit. Fewer delays = dropped params (Preset Forge issue #80).
-- SnapTone effects (AMP/DST ids 0x0F00000x) are captured profiles: params editable, but we can't create new captures.
+- SnapTone effects (AMP/DST ids 0x0F00000x) are captured profiles: params editable, but `gp200` can't create them. NAM→SnapTone conversion (render Valeton's 70 s `nam_input_wav.wav` through the NAM model, editor-side) + USB upload (10 slots: 0-4 AMP, 5-9 DST) is implemented in VLTN Tone Studio (github.com/grzmol/VLTN-Tone-Studio, GPL-3, native Linux AppImage); GP-200JR marked untested there. Use that app for SnapTones instead of porting the NAM renderer.
 
 ## License
 Effect tables and protocol knowledge come from Preset Forge (GPL-3.0); this repo is GPL-3.0 too.
