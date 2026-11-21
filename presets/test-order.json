@@ -1,0 +1,13 @@
+{
+ "name": "Order Test",
+ "blocks": {
+  "NR":  {"effect": "Gate 2"},
+  "AMP": {"effect": "UK 800"},
+  "CAB": {"effect": "UK GRN 2"},
+  "DLY": {"effect": "BBD Delay S", "params": {"Mix": 20}},
+  "RVB": {"effect": "Room"},
+  "VOL": {"effect": "Volume"}
+ },
+ "order": ["PRE","NR","WAH","DST","DLY","RVB","AMP","CAB","EQ","MOD","VOL"],
+ "fxloop": [3, 6]
+}

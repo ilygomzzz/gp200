@@ -1,0 +1,11 @@
+{
+ "name": "Claude Crunch",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 20, "Tone": 55, "Volume": 70}},
+  "AMP": {"effect": "UK 800", "params": {"Gain": 55, "Presence": 60, "Bass": 45, "Middle": 65, "Treble": 60, "Volume": 50}},
+  "NR":  {"effect": "Gate 2", "params": {"Threshold": 40}},
+  "CAB": {"effect": "UK GRN 2"},
+  "RVB": {"effect": "Room", "params": {"Mix": 15}},
+  "VOL": {"effect": "Volume"}
+ }
+}

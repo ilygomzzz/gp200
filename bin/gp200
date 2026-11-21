@@ -1,0 +1,343 @@
+#!/usr/bin/env python3
+"""gp200 — read/write Valeton GP-200 / GP-200JR presets over USB MIDI SysEx (Linux, stdlib only).
+
+Protocol and effect tables: reverse-engineered by https://github.com/phash/gp200editor (GPL-3.0).
+See ../CLAUDE.md for the preset JSON format and workflow.
+"""
+import argparse, json, math, os, re, select, struct, sys, time
+from datetime import datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+EFFECTS = {int(k): v for k, v in json.loads((ROOT / "data/effects.json").read_text()).items()}
+BLOCKS = ["PRE", "WAH", "DST", "AMP", "NR", "CAB", "EQ", "MOD", "DLY", "RVB", "VOL"]
+HDR = [0xF0, 0x21, 0x25, 0x7E, 0x47, 0x50, 0x2D, 0x32]  # Valeton + "GP-2"
+NSLOTS = 256
+
+
+# ---------- codec ----------
+def nib(data):
+    return [x for b in data for x in ((b >> 4) & 0xF, b & 0xF)]
+
+
+def unnib(data):
+    return bytes((data[i] << 4) | data[i + 1] for i in range(0, len(data) - 1, 2))
+
+
+def slot_label(s):
+    return f"{s // 4 + 1}{'ABCD'[s % 4]}"
+
+
+def parse_slot(text):
+    m = re.fullmatch(r"(\d+)([ABCDabcd])", text)
+    s = (int(m[1]) - 1) * 4 + "ABCD".index(m[2].upper()) if m else int(text)
+    if not 0 <= s < NSLOTS:
+        sys.exit(f"slot out of range: {text}")
+    return s
+
+
+def nibble_msg(sub, payload):
+    return bytes(HDR + [0x12, sub, 0, 0, 0] + nib(payload) + [0xF7])
+
+
+def msg_read(slot):
+    sh, sl = (slot >> 4) & 0xF, slot & 0xF
+    return bytes(HDR + [0x11, 0x10] + [0] * 8 + [4, 0, 0, 0, 1, 0, 0, sh, sl, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, sh, sl, 0, 0, sh, sl, 0, 0, 0xF7])
+
+
+def msg_select(slot):
+    return bytes(HDR + [0x12, 0x08, 0, 0, 0, 0, 8, 1, 0, 0, 4, 0, 0, 0, 0, 0, 0, (slot >> 4) & 0xF, slot & 0xF, 0, 0, 0xF7])
+
+
+def msg_effect(block, eid):
+    v = eid & 0xFF
+    return bytes(HDR + [0x12, 0x14] + [0] * 8 + [4, 0, 0, 0] + [0] * 7 + [1, 6, 0, 0, 0, 8, 0, 0, 0, block, 0, 0, 7, 6, 0, 2, v >> 4, v & 0xF, 0, 0, 0, 0, 0, (eid >> 24) & 0xFF, 0xF7])
+
+
+def msg_toggle(block, on):
+    return bytes(HDR + [0x12, 0x10] + [0] * 8 + [4, 0, 0, 0] + [0] * 7 + [1, 5, 0, 0, 0, 4, 0, 0, 0, block, 0, int(on), 9, 0xC, 0, 2, 0xF7])
+
+
+def msg_param(block, idx, eid, value):
+    p = bytearray(24)
+    p[2], p[8], p[10], p[12], p[13] = 4, 5, 0xC, block, idx
+    disp = max(0, min(0xFFFF, round(16367 + 16 * math.log2(value)))) if value > 0 else 0
+    struct.pack_into("<HIf", p, 14, disp, eid, value)  # device reads disp for a block's first param
+    return nibble_msg(0x18, p)
+
+
+def msg_reorder(order, send, ret):
+    p = bytearray(32)
+    p[2], p[8], p[10], p[14], p[15], p[27] = 4, 8, 0x10, send, ret, 0x44
+    p[16:27] = bytes(order)
+    return nibble_msg(0x20, p)
+
+
+def msg_save(slot, name):
+    p = bytearray(24)
+    p[0:3], p[4] = b"\x03\x20\x14", slot
+    p[8:8 + len(name)] = name.encode("ascii")
+    return nibble_msg(0x18, p)
+
+
+def decode_preset(raw):
+    """1176-byte decoded slot dump -> preset dict (the JSON format documented in CLAUDE.md)."""
+    cstr = lambda b: b.split(b"\0")[0].decode("ascii", "replace").strip()
+    blocks = {}
+    # chain order lives in raw[108:119] (verified on GP-200JR); block records stay in fixed 0..10 order
+    order = [BLOCKS[i] for i in raw[108:119]]
+    for pos in range(11):
+        base = 120 + pos * 72
+        bi, on, eid = raw[base + 4], raw[base + 5] == 1, struct.unpack_from("<I", raw, base + 8)[0]
+        vals = struct.unpack_from("<15f", raw, base + 12)
+        info = EFFECTS.get(eid, {"name": f"#{eid:#x}", "params": []})
+        named = {p["idx"]: p["name"] for p in info["params"]}
+        blocks[BLOCKS[bi]] = {"effect": info["name"], "on": on,
+                              "params": {named.get(i, f"#{i}"): round(v, 3) for i, v in enumerate(vals)}}
+    out = {"name": cstr(raw[28:44]), "author": cstr(raw[44:60]), "blocks": {b: blocks[b] for b in BLOCKS},
+           "fxloop": [raw[106], raw[107]]}
+    if order != BLOCKS:
+        out["order"] = order
+    return out
+
+
+# ---------- device I/O ----------
+class Device:
+    def __init__(self):
+        cards = Path("/proc/asound/cards").read_text()
+        m = re.search(r"^\s*(\d+)\s*\[(GP200\w*)\s*\]", cards, re.M)
+        if not m:
+            sys.exit("GP-200 not found (is it plugged in via USB?)")
+        self.fd = os.open(f"/dev/snd/midiC{m[1]}D0", os.O_RDWR | os.O_NONBLOCK)
+        self.buf = b""
+        self.drain()
+
+    def send(self, msg, gap=0.0):
+        os.write(self.fd, msg)
+        time.sleep(gap)
+
+    def drain(self):
+        while select.select([self.fd], [], [], 0.05)[0]:
+            os.read(self.fd, 4096)
+        self.buf = b""
+
+    def messages(self, timeout):
+        """Yield complete SysEx messages until `timeout` seconds pass without data."""
+        while True:
+            if b"\xF7" in self.buf:
+                start = self.buf.find(b"\xF0")
+                end = self.buf.find(b"\xF7", max(start, 0))
+                msg, self.buf = self.buf[start:end + 1], self.buf[end + 1:]
+                if start >= 0 and end > start:
+                    yield msg
+                continue
+            if not select.select([self.fd], [], [], timeout)[0]:
+                return
+            self.buf += os.read(self.fd, 4096)
+
+    def identity(self):
+        self.send(bytes(HDR + [0x11, 0x04, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0xF7]))
+        return next((m for m in self.messages(1.0) if m[9] == 0x08), None)
+
+    def read(self, slot, tries=3):
+        for _ in range(tries):
+            self.drain()
+            self.send(msg_read(slot))
+            chunks = {}
+            for m in self.messages(0.5):
+                if m[8] == 0x12 and m[9] == 0x18:  # m[10] is a constant 0x09 on GP-200JR, not the slot
+                    chunks[m[11] | m[12] << 7] = m[13:-1]
+                    if len(chunks) == 7:
+                        break
+            raw = unnib([x for k in sorted(chunks) for x in chunks[k]])
+            if len(raw) == 1176:
+                return raw
+        sys.exit(f"no/partial answer reading slot {slot_label(slot)} ({len(chunks)}/7 chunks)")
+
+
+# ---------- preset building ----------
+def find_effect(block, name):
+    want = name.strip().lower()
+    hits = [(eid, e) for eid, e in EFFECTS.items() if e["module"] == block and e["name"].lower() == want]
+    if not hits:
+        sys.exit(f"unknown {block} effect {name!r} — see: gp200 effects {block}")
+    return hits[0]
+
+
+def build(old, new):
+    """Merge a (possibly partial) preset JSON over the slot's current content.
+    Listed blocks: on unless "on": false. Unlisted blocks: keep effect, turned off."""
+    name = new.get("name", old["name"])
+    if len(name) > 16 or not name.isascii():
+        sys.exit(f"name must be ASCII, max 16 chars: {name!r}")
+    unknown = set(new.get("blocks", {})) - set(BLOCKS)
+    if unknown:
+        sys.exit(f"unknown blocks {unknown}; valid: {BLOCKS}")
+    plan = []
+    for b in BLOCKS:
+        cur, spec = old["blocks"][b], new.get("blocks", {}).get(b)
+        want = (spec or {}).get("effect") or cur["effect"]
+        if want.startswith("#"):  # effect id missing from the catalog: keep it as-is
+            eid, info = int(want[1:], 16), {"name": want, "params": []}
+        else:
+            eid, info = find_effect(b, want)
+        byname = {p["name"].lower(): p for p in info["params"]}
+        if info["name"].lower() == cur["effect"].lower():  # same effect: start from all 15 current values
+            vals = {int(k[1:]) if k.startswith("#") else byname[k.lower()]["idx"]: v for k, v in cur["params"].items()}
+        else:  # new effect: table defaults only, the device inits the rest
+            vals = {p["idx"]: p["default"] for p in info["params"]}
+        for k, v in (spec or {}).get("params", {}).items():
+            if k.startswith("#"):
+                vals[int(k[1:])] = float(v)
+                continue
+            p = byname.get(k.lower())
+            if not p:
+                sys.exit(f"{b}/{info['name']}: unknown param {k!r}; has {[p['name'] for p in info['params']]}")
+            if p["type"] == "knob":
+                if not p["min"] <= float(v) <= p["max"]:
+                    sys.exit(f"{b}/{info['name']}/{p['name']}={v} out of range {p['min']}..{p['max']}")
+                vals[p["idx"]] = float(v)
+            else:
+                opt = {o["name"].lower(): o["id"] for o in p["options"]}
+                ids = set(opt.values())
+                vals[p["idx"]] = float(opt[str(v).lower()] if str(v).lower() in opt else v)
+                if vals[p["idx"]] not in ids:
+                    sys.exit(f"{b}/{info['name']}/{p['name']}={v}; options {list(opt)}")
+        # only real params (catalog) or explicit "#i" overrides; unused slots are noise that doubles push time
+        keep = {p["idx"] for p in info["params"]} | {int(k[1:]) for k in (spec or {}).get("params", {}) if k.startswith("#")}
+        vals = {i: v for i, v in vals.items() if i in keep}
+        on = spec.get("on", True) if spec else False
+        plan.append((BLOCKS.index(b), eid, on, dict(sorted(vals.items()))))
+    order = [BLOCKS.index(b) for b in new.get("order", old.get("order", BLOCKS))]
+    if sorted(order) != list(range(11)):
+        sys.exit("order must list all 11 blocks exactly once")
+    send, ret = new.get("fxloop", old["fxloop"])
+    send, ret = (send, ret) if 1 <= send <= 10 and 1 <= ret <= 10 else (4, 4)
+    return name, plan, order, send, ret
+
+
+def push(dev, slot, name, plan, order, send, ret):
+    # Timings/two-pass from Preset Forge devicePush.ts: params racing an algorithm load get dropped.
+    def params(block, eid, vals):
+        items = list(vals.items())
+        for i, v in items + items[:1]:  # device swallows a block's first param write; resend it last
+            dev.send(msg_param(block, i, eid, v), 0.04)
+
+    dev.send(msg_select(slot), 0.3)
+    for n, (block, eid, on, vals) in enumerate(plan):
+        print(f"  [{n + 1}/11] {BLOCKS[block]}", file=sys.stderr)
+        dev.send(msg_effect(block, eid), 0.4)
+        params(block, eid, vals)
+        dev.send(msg_toggle(block, on), 0.05)
+    for block, eid, on, vals in plan:
+        params(block, eid, vals)
+    dev.send(msg_reorder(order, send, ret), 0.1)
+    dev.send(msg_save(slot, name), 0.8)
+    dev.drain()
+
+
+def diff(want_plan, name, got, order=None, fxloop=None):
+    probs = [] if got["name"] == name else [f"name {got['name']!r} != {name!r}"]
+    got_order = [BLOCKS.index(b) for b in got.get("order", BLOCKS)]
+    if order is not None and got_order != order:
+        probs.append(f"order {got.get('order', BLOCKS)} != {[BLOCKS[i] for i in order]}")
+    if fxloop is not None and got["fxloop"] != list(fxloop):
+        probs.append(f"fxloop {got['fxloop']} != {list(fxloop)}")
+    for block, eid, on, vals in want_plan:
+        g = got["blocks"][BLOCKS[block]]
+        info = EFFECTS.get(eid, {"name": f"#{eid:#x}", "params": []})
+        if g["effect"] != info["name"] or g["on"] != on:
+            probs.append(f"{BLOCKS[block]}: got {g['effect']} on={g['on']}, want {info['name']} on={on}")
+        gv = list(g["params"].values())
+        probs += [f"{BLOCKS[block]} param#{i}: got {gv[i]} want {v}" for i, v in vals.items() if abs(gv[i] - v) > 0.51]
+    return probs
+
+
+# ---------- commands ----------
+def cmd_info(a):
+    m = Device().identity()
+    print(f"connected, identity: {m.hex(' ') if m else 'NO ANSWER'}")
+
+
+def cmd_list(a):
+    dev = Device()
+    lo, _, hi = a.range.partition("-")
+    for s in range(parse_slot(lo), parse_slot(hi or lo) + 1):
+        raw = dev.read(s)
+        print(f"{slot_label(s):>4}  {raw[28:44].split(b'\0')[0].decode('ascii', 'replace')}", flush=True)
+
+
+def cmd_show(a):
+    p = decode_preset(Device().read(parse_slot(a.slot)))
+    if a.json:
+        return print(json.dumps(p, indent=1))
+    print(f"{a.slot}: {p['name']}" + (f"  (by {p['author']})" if p["author"] else ""))
+    for b, blk in p["blocks"].items():
+        info = next((e for e in EFFECTS.values() if e["name"] == blk["effect"]), {"params": []})
+        named = {p["name"] for p in info["params"]}
+        ps = ", ".join(f"{k}={v:g}" for k, v in blk["params"].items() if k in named)
+        print(f"  {'ON ' if blk['on'] else 'off'} {b:<4} {blk['effect']:<16} {ps}")
+    if "order" in p:
+        print("  order:", " > ".join(p["order"]))
+
+
+def cmd_effects(a):
+    q = (a.query or "").lower()
+    for eid, e in sorted(EFFECTS.items(), key=lambda kv: (BLOCKS.index(kv[1]["module"]), kv[0])):
+        if a.module and e["module"] != a.module.upper():
+            continue
+        if q and q not in e["name"].lower() and q not in e.get("desc", "").lower():
+            continue
+        print(f"{e['module']:<4} {e['name']:<18} {e.get('desc', '')}")
+        if a.params:
+            for p in e["params"]:
+                rng = f"{p['min']:g}..{p['max']:g}" if p["type"] == "knob" else "|".join(o["name"] for o in p["options"])
+                print(f"       {p['name']:<14} {rng:<22} default {p['default']:g}")
+
+
+def cmd_write(a):
+    slot = parse_slot(a.slot)
+    new = json.loads(Path(a.file).read_text() if a.file != "-" else sys.stdin.read())
+    dev = Device()
+    old_raw = dev.read(slot)
+    old = decode_preset(old_raw)
+    plan = build(old, new)  # validates everything before touching the device
+    if a.dry_run:
+        print(f"would write {slot_label(slot)} (now {old['name']!r}) = {plan[0]!r}")
+        for b, e, on, v in plan[1]:
+            info = EFFECTS.get(e, {"name": f"#{e:#x}", "params": []})
+            names = {p["idx"]: p["name"] for p in info["params"]}
+            print(f"  {'ON ' if on else 'off'} {BLOCKS[b]:<4} {info['name']:<16} " + ", ".join(f"{names.get(i, f'#{i}')}={x:g}" for i, x in v.items()))
+        return
+    ROOT.joinpath("backups").mkdir(exist_ok=True)
+    bak = ROOT / "backups" / f"{datetime.now():%Y%m%d-%H%M%S}-{slot_label(slot)}.json"
+    bak.write_text(json.dumps(old, indent=1))
+    print(f"backup of {slot_label(slot)} ({old['name']!r}) -> {bak}", file=sys.stderr)
+    push(dev, slot, *plan)
+    probs = diff(plan[1], plan[0], decode_preset(dev.read(slot)), plan[2], plan[3:5])
+    if probs:
+        sys.exit("written, but readback differs:\n  " + "\n  ".join(probs))
+    print(f"OK: {slot_label(slot)} = {plan[0]!r} (verified by readback)")
+
+
+def cmd_select(a):
+    Device().send(msg_select(parse_slot(a.slot)), 0.1)
+
+
+def main():
+    ap = argparse.ArgumentParser(prog="gp200", description=__doc__.splitlines()[0])
+    sp = ap.add_subparsers(required=True)
+    sp.add_parser("info", help="check connection").set_defaults(f=cmd_info)
+    p = sp.add_parser("list", help="slot names, e.g. list 1A-10D"); p.add_argument("range"); p.set_defaults(f=cmd_list)
+    p = sp.add_parser("show", help="show a slot"); p.add_argument("slot"); p.add_argument("--json", action="store_true"); p.set_defaults(f=cmd_show)
+    p = sp.add_parser("effects", help="effect catalog"); p.add_argument("module", nargs="?"); p.add_argument("-q", "--query")
+    p.add_argument("-p", "--params", action="store_true", help="also list params"); p.set_defaults(f=cmd_effects)
+    p = sp.add_parser("write", help="write preset JSON to slot (auto-backup + readback verify)")
+    p.add_argument("slot"); p.add_argument("file", help="preset JSON, or - for stdin"); p.add_argument("-n", "--dry-run", action="store_true"); p.set_defaults(f=cmd_write)
+    p = sp.add_parser("select", help="switch the pedal to a slot"); p.add_argument("slot"); p.set_defaults(f=cmd_select)
+    a = ap.parse_args()
+    a.f(a)
+
+
+if __name__ == "__main__":
+    main()
