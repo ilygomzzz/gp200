@@ -1,0 +1,13 @@
+{"name": "Rapp Snitch",
+ "blocks": {
+   "PRE": {"effect": "COMP", "params": {"Sustain": 35, "Volume": 55}},
+   "DST": {"effect": "Lazaro", "params": {"Sustain": 35, "Tone": 40, "Volume": 55}},
+   "AMP": {"effect": "Silver Twin", "params": {"Gain": 45, "Bass": 45, "Middle": 65, "Treble": 50, "Volume": 55}},
+   "NR":  {"effect": "Gate 1", "params": {"Threshold": 12}},
+   "CAB": {"effect": "Dark Twin", "params": {"Low Cut": 150, "High Cut": 5000}},
+   "EQ":  {"effect": "Guitar EQ 1", "params": {"125Hz": -6, "800Hz": 6, "1.6kHz": 4, "4kHz": -6}},
+   "MOD": {"effect": "O-Phase", "on": false, "params": {"Rate": 0.4}},
+   "DLY": {"effect": "BBD Delay S", "on": false},
+   "RVB": {"effect": "Tube Spring", "params": {"Mix": 15, "Decay": 35}},
+   "VOL": {"effect": "Volume"}
+ }}
