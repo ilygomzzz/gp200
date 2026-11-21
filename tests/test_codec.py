@@ -1,4 +1,5 @@
 """Offline codec self-check (no device). Run: python3 -m unittest discover tests"""
+import tempfile
 import unittest
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
@@ -6,7 +7,39 @@ from pathlib import Path
 g = SourceFileLoader("gp200", str(Path(__file__).parent.parent / "bin/gp200")).load_module()
 
 
+class FakeDev:
+    def __init__(self):
+        raw = bytearray(1176)
+        raw[28:32] = b"Test"
+        raw[108:119] = bytes(range(11))
+        for i in range(11):
+            raw[120 + i * 72 + 4] = i
+            eid = next(e for e, x in g.EFFECTS.items() if x["module"] == g.BLOCKS[i])
+            raw[120 + i * 72 + 8:120 + i * 72 + 12] = g.struct.pack("<I", eid)
+        self.raw, self.sent = bytes(raw), []
+
+    def read(self, slot):
+        return self.raw
+
+    def send(self, msg, gap=0.0):
+        self.sent.append(msg)
+
+    def drain(self):
+        pass
+
+
 class Codec(unittest.TestCase):
+    def test_write_preset_backs_up_then_selects_first_and_saves_last(self):
+        dev, seen = FakeDev(), []
+        with tempfile.TemporaryDirectory() as d:
+            g.ROOT = Path(d)
+            bak, probs, name = g.write_preset(dev, 100, {"name": "X"}, seen.append)
+            self.assertEqual(g.json.loads(bak.read_text())["name"], "Test")
+        self.assertEqual(dev.sent[0], g.msg_select(100))
+        self.assertEqual(dev.sent[-1], g.msg_save(100, "X"))
+        self.assertEqual((seen, name), (list(range(1, 12)), "X"))
+        self.assertTrue(probs)  # fake readback still says "Test"
+
     def test_nibble_roundtrip(self):
         data = bytes(range(256))
         self.assertEqual(g.unnib(g.nib(data)), data)

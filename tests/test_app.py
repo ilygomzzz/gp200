@@ -1,11 +1,12 @@
 """Offline checks for the app's pure helpers. Run: python3 -m unittest discover tests"""
 import json
 import unittest
-from importlib.machinery import SourceFileLoader
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
 try:
-    a = SourceFileLoader("gp200_app", str(Path(__file__).parent.parent / "app/gp200_app.py")).load_module()
+    import chat as a
 except ImportError:  # PyQt6 missing
     a = None
 

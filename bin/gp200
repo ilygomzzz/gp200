@@ -221,7 +221,7 @@ def build(old, new):
     return name, plan, order, send, ret
 
 
-def push(dev, slot, name, plan, order, send, ret):
+def push(dev, slot, name, plan, order, send, ret, progress=None):
     # Timings/two-pass from Preset Forge devicePush.ts: params racing an algorithm load get dropped.
     def params(block, eid, vals):
         items = list(vals.items())
@@ -230,7 +230,8 @@ def push(dev, slot, name, plan, order, send, ret):
 
     dev.send(msg_select(slot), 0.3)
     for n, (block, eid, on, vals) in enumerate(plan):
-        print(f"  [{n + 1}/11] {BLOCKS[block]}", file=sys.stderr)
+        if progress:
+            progress(n + 1)
         dev.send(msg_effect(block, eid), 0.4)
         params(block, eid, vals)
         dev.send(msg_toggle(block, on), 0.05)
@@ -307,29 +308,35 @@ def cmd_effects(a):
                 print(f"       {p['name']:<14} {rng:<22} default {p['default']:g}")
 
 
+def write_preset(dev, slot, new, progress=None):
+    """Backup -> push -> readback diff. Returns (backup_path, problems, name); SystemExit on invalid input/no answer."""
+    old = decode_preset(dev.read(slot))
+    plan = build(old, new)  # validates everything before touching the device
+    ROOT.joinpath("backups").mkdir(exist_ok=True)
+    bak = ROOT / "backups" / f"{datetime.now():%Y%m%d-%H%M%S}-{slot_label(slot)}.json"
+    bak.write_text(json.dumps(old, indent=1))
+    print(f"backup of {slot_label(slot)} ({old['name']!r}) -> {bak}", file=sys.stderr)
+    push(dev, slot, *plan, progress)
+    return bak, diff(plan[1], plan[0], decode_preset(dev.read(slot)), plan[2], plan[3:5]), plan[0]
+
+
 def cmd_write(a):
     slot = parse_slot(a.slot)
     new = json.loads(Path(a.file).read_text() if a.file != "-" else sys.stdin.read())
     dev = Device()
-    old_raw = dev.read(slot)
-    old = decode_preset(old_raw)
-    plan = build(old, new)  # validates everything before touching the device
     if a.dry_run:
+        old = decode_preset(dev.read(slot))
+        plan = build(old, new)
         print(f"would write {slot_label(slot)} (now {old['name']!r}) = {plan[0]!r}")
         for b, e, on, v in plan[1]:
             info = EFFECTS.get(e, {"name": f"#{e:#x}", "params": []})
             names = {p["idx"]: p["name"] for p in info["params"]}
             print(f"  {'ON ' if on else 'off'} {BLOCKS[b]:<4} {info['name']:<16} " + ", ".join(f"{names.get(i, f'#{i}')}={x:g}" for i, x in v.items()))
         return
-    ROOT.joinpath("backups").mkdir(exist_ok=True)
-    bak = ROOT / "backups" / f"{datetime.now():%Y%m%d-%H%M%S}-{slot_label(slot)}.json"
-    bak.write_text(json.dumps(old, indent=1))
-    print(f"backup of {slot_label(slot)} ({old['name']!r}) -> {bak}", file=sys.stderr)
-    push(dev, slot, *plan)
-    probs = diff(plan[1], plan[0], decode_preset(dev.read(slot)), plan[2], plan[3:5])
+    _, probs, name = write_preset(dev, slot, new, lambda n: print(f"  [{n}/11] {BLOCKS[n - 1]}", file=sys.stderr))
     if probs:
         sys.exit("written, but readback differs:\n  " + "\n  ".join(probs))
-    print(f"OK: {slot_label(slot)} = {plan[0]!r} (verified by readback)")
+    print(f"OK: {slot_label(slot)} = {name!r} (verified by readback)")
 
 
 def cmd_select(a):

@@ -1,244 +1,107 @@
-"""GP-200JR desktop app: preset list + chat with Claude (spec 001). Run: bin/gp200-app"""
-import json
-import os
-import re
+"""GP-200JR desktop app: preset workbench + chat with Claude (spec 002). Run: bin/gp200-app"""
 import sys
-import threading
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
-from PyQt6.QtCore import QProcess, QProcessEnvironment, QThread, Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QPalette
-from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
-                             QPlainTextEdit, QPushButton, QSplitter, QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # app/ modules are top-level (theme, model, chat, widgets)
 
-ROOT = Path(__file__).resolve().parent.parent
-g = SourceFileLoader("gp200", str(ROOT / "bin/gp200")).load_module()
-EMPTY = "It's GP-200JR"
-GUITAR = "Ibanez AZ24S1F"
-MIDI = threading.Lock()  # raw MIDI is exclusive: one reader/writer at a time (app thread or a Claude run)
-SYSTEM = (f"You are running inside the GP-200 desktop app's chat, not a terminal. Reply in Spanish, short. "
-          f"You cannot use AskUserQuestion: ask questions as plain text and wait for the next message. "
-          f"Use the gp200 skill/CLI for the pedal. The user's guitar is an {GUITAR}: recommend pickup "
-          f"positions and adapt presets to it.")
+from PyQt6.QtWidgets import QApplication, QSplitter, QTabWidget, QVBoxLayout, QWidget  # noqa: E402
+
+import theme  # noqa: E402
+from chat import ChatHub, system_prompt  # noqa: E402
+from model import Pedal, Workbench, g  # noqa: E402
+from widgets.chat_panel import ChatPanel  # noqa: E402
+from widgets.slot_list import SlotList  # noqa: E402
+from widgets.workbench_view import WorkbenchView  # noqa: E402
 
 
-def with_device(fn):
-    """Open the pedal, run fn(dev), close. Returns (result, error string)."""
-    with MIDI:
-        try:
-            dev = g.Device()
-        except SystemExit as e:
-            return None, str(e)
-        try:
-            return fn(dev), None
-        except SystemExit as e:
-            return None, str(e)
-        finally:
-            os.close(dev.fd)
-
-
-def parse_event(line):
-    """One stream-json line from `claude -p` -> list of (kind, payload); kinds: session, text, tool, done, error."""
-    try:
-        ev = json.loads(line)
-    except ValueError:
-        return []
-    t, out = ev.get("type"), []
-    if t == "system" and ev.get("subtype") == "init":
-        out.append(("session", ev.get("session_id")))
-    elif t == "assistant":
-        for c in ev.get("message", {}).get("content", []):
-            if c.get("type") == "text" and c["text"].strip():
-                out.append(("text", c["text"].strip()))
-            elif c.get("type") == "tool_use":
-                inp = c.get("input", {})
-                out.append(("tool", inp.get("command") or inp.get("file_path") or inp.get("skill") or c["name"]))
-    elif t == "result":
-        out.append(("error" if ev.get("is_error") else "done", ev.get("result", "")))
-    return out
-
-
-def touched_slots(command):
-    """Slots a gp200 command writes/selects, e.g. 'gp200 write 34B x.json' -> ['34B']."""
-    return re.findall(r"gp200\s+(?:write|select)\s+(\d+[ABCabc])\b", command)
-
-
-class Loader(QThread):
-    slot = pyqtSignal(int, str)
-    failed = pyqtSignal(str)
-
-    def __init__(self, slots):
-        super().__init__()
-        self.slots, self.stop, self.left = slots, False, []
-
-    def run(self):
-        def read_all(dev):
-            for i, s in enumerate(self.slots):
-                if self.stop:  # a Claude run wants the port; the rest is re-read afterwards
-                    self.left = self.slots[i:]
-                    return
-                raw = dev.read(s)
-                self.slot.emit(s, raw[28:44].split(b"\0")[0].decode("ascii", "replace"))
-        _, err = with_device(read_all)
-        if err:
-            self.failed.emit(err)
-
-
-class App(QWidget):
-    def __init__(self):
+class MainWindow(QWidget):
+    def __init__(self, pedal=None, hub=None):
         super().__init__()
         self.setWindowTitle("GP-200JR")
-        self.resize(1000, 680)
-        self.items, self.session, self.proc, self.pending, self.loader = {}, None, None, set(), None
+        self.resize(1280, 800)
+        self.setMinimumSize(1000, 640)
+        self.pedal = pedal or Pedal()
+        self.hub = hub or ChatHub(self.pedal)
+        self.wb = Workbench(self.pedal)
+        self.slots, self.chat, self.general = SlotList(), ChatPanel(), ChatPanel(global_ctx=True)
+        self.view = WorkbenchView(self.wb, lambda: self.slots.names)
 
-        # presets tab
-        self.slots = QListWidget()
-        self.slots.currentRowChanged.connect(self.show_slot)
-        self.slots.itemDoubleClicked.connect(self.select_slot)
-        for s in range(g.NSLOTS):
-            it = QListWidgetItem(f"{g.slot_label(s):>4}  …")
-            self.slots.addItem(it)
-            self.items[s] = it
-        self.chain = QPlainTextEdit(readOnly=True)
-        self.chain.setFont(QFont("monospace"))
-        self.status = QLabel("Leyendo la pedalera…")
-        reload_btn = QPushButton("⟳ Releer")
-        reload_btn.clicked.connect(lambda: self.load(range(g.NSLOTS)))
-        right = QVBoxLayout()
-        right.addWidget(self.chain)
-        bar = QHBoxLayout()
-        bar.addWidget(self.status, 1)
-        bar.addWidget(reload_btn)
-        right.addLayout(bar)
-        presets = QSplitter()
-        presets.addWidget(self.slots)
-        rw = QWidget()
-        rw.setLayout(right)
-        presets.addWidget(rw)
-        presets.setSizes([260, 740])
-
-        # chat tab
-        self.log = QTextBrowser()
-        self.log.setOpenExternalLinks(True)
-        self.entry = QLineEdit(placeholderText="Pide un sonido, un cambio… (Enter)")
-        self.entry.returnPressed.connect(self.send)
-        chat = QWidget()
-        cl = QVBoxLayout(chat)
-        cl.addWidget(self.log)
-        cl.addWidget(self.entry)
-
+        split = QSplitter()
+        for w, size in ((self.slots, 220), (self.view, 700), (self.chat, 360)):
+            split.addWidget(w)
+            w.setMinimumWidth({220: 160, 700: 560, 360: 280}[size])
+        split.setSizes([220, 700, 360])
+        split.setCollapsible(0, False), split.setCollapsible(1, False)
         tabs = QTabWidget()
-        tabs.addTab(presets, "Presets")
-        tabs.addTab(chat, "Chat")
+        tabs.addTab(split, "Presets")
+        tabs.addTab(self.general, "Chat general")
         QVBoxLayout(self).addWidget(tabs)
-        self.load(range(g.NSLOTS))
 
-    # ----- presets -----
-    def load(self, slots):
-        if self.proc:  # a Claude run may hold the MIDI port; refresh when it ends
-            self.pending.update(slots)
-            return
-        self.loader = Loader(list(slots))
-        self.loader.slot.connect(self.set_name)
-        self.loader.failed.connect(lambda e: self.status.setText(f"⚠ {e}"))
-        self.loader.finished.connect(lambda: self.status.text().startswith("⚠") or self.status.setText("Listo"))
-        self.loader.start()
+        p, wb = self.pedal, self.wb
+        p.slot_name.connect(self.slots.set_name)
+        p.failed.connect(lambda area, m: area == "scan" and self.slots.set_status(f"⚠ {m}", True))
+        self.slots.slot_chosen.connect(wb.request_open)
+        self.slots.reload_clicked.connect(self._scan)
+        wb.loading.connect(self._opened)
+        wb.guard.connect(lambda _: self.slots.set_current(wb.slot))
+        wb.dirty_changed.connect(lambda d: wb.slot is not None and self.slots.set_dirty(wb.slot, d))
+        wb.busy_changed.connect(self._busy)
+        p.scan_done.connect(lambda: self.slots.status.text().startswith("⚠") or self.slots.set_status("Listo"))
+        self.chat.submitted.connect(lambda t: self._send(wb.label, t))
+        self.general.submitted.connect(lambda t: self._send("global", t))
+        self.chat.new_chat.connect(lambda: self.hub.reset(wb.label))
+        self.general.new_chat.connect(lambda: self.hub.reset("global"))
+        self.general.bind(self.hub.session("global"), "global", None)
+        self.hub.running_changed.connect(lambda _: self._lock())
+        self.hub.wrote_slots.connect(self._wrote)
+        wb.changed.connect(lambda _: self._title())
+        wb.loaded.connect(lambda _: self._title())
+        self._scan()
 
-    def set_name(self, s, name):
-        it = self.items[s]
-        it.setText(f"{g.slot_label(s):>4}  {'(vacío)' if name == EMPTY else name}")
-        it.setData(Qt.ItemDataRole.UserRole, name)
-        it.setForeground(QColor("#777") if name == EMPTY else QColor("#ddd"))
+    def _scan(self):
+        self.slots.set_status("Leyendo la pedalera…")
+        self.pedal.scan(range(g.NSLOTS))
 
-    def show_slot(self, s):
-        if s < 0 or self.busy():
-            return
-        p, err = with_device(lambda dev: g.decode_preset(dev.read(s)))
-        self.chain.setPlainText(err or f"{g.slot_label(s)}: {p['name']}\n" + "\n".join(g.show_lines(p)))
+    def _opened(self, slot):
+        self.slots.set_current(slot)
+        self.view.set_open(True)
+        self.chat.bind(self.hub.session(g.slot_label(slot)), g.slot_label(slot), f"Chat · {g.slot_label(slot)}")
+        self._lock()
 
-    def busy(self):
-        return bool(self.proc or (self.loader and self.loader.isRunning()))
+    def _title(self):
+        if self.wb.working:
+            self.chat.title.setText(f"Chat · {self.wb.label} {self.wb.working['name']}")
 
-    def select_slot(self, item):
-        s = self.slots.row(item)
-        if self.busy():
-            return self.status.setText("Ocupado leyendo la pedalera, prueba en un momento")
-        _, err = with_device(lambda dev: dev.send(g.msg_select(s), 0.1))
-        self.status.setText(err or f"Pedalera en {g.slot_label(s)}")
+    def _busy(self, what):
+        self._lock()
 
-    # ----- chat -----
-    def say(self, who, text, color="#ddd"):
-        esc = text.replace("&", "&amp;").replace("<", "&lt;").replace("\n", "<br>")
-        esc = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", re.sub(r"`([^`]+)`", r"<code>\1</code>", esc))
-        self.log.append(f'<p style="color:{color}"><b>{who}</b> {esc}</p>')
+    def _lock(self):
+        busy = self.wb.busy
+        self.chat.set_locked("Espera a que termine de guardar" if busy == "save" else
+                             "Claude está respondiendo…" if self.hub.active else None)
+        self.general.set_locked("Espera a que termine de guardar" if busy == "save" else
+                                "Claude está respondiendo…" if self.hub.active else None)
+        if busy == "claude":
+            self.view._status("Claude está usando la pedalera…", False)
 
-    def send(self):
-        msg = self.entry.text().strip()
-        if not msg or self.proc:
-            return
-        self.entry.clear()
-        self.say("Tú:", msg, "#8cf")
-        row = self.slots.currentRow()
-        sysp = SYSTEM + (f" Slot selected in the app: {g.slot_label(row)}." if row >= 0 else "")
-        args = ["-p", msg, "--output-format", "stream-json", "--verbose", "--append-system-prompt", sysp,
-                "--allowedTools", "Bash(gp200:*)", f"Bash({ROOT}/bin/gp200:*)", "Read", "Write", "Edit", "Skill"]
-        if self.session:
-            args += ["--resume", self.session]
-        self.proc = QProcess(self)
-        env = QProcessEnvironment.systemEnvironment()
-        env.insert("PATH", f"{Path.home()}/.local/bin:" + env.value("PATH"))
-        self.proc.setProcessEnvironment(env)
-        self.proc.setWorkingDirectory(str(ROOT))
-        self.proc.readyReadStandardOutput.connect(self.read_claude)
-        self.proc.finished.connect(self.claude_done)
-        self.buf = b""
-        if self.loader and self.loader.isRunning():
-            self.loader.stop = True
-            self.loader.wait()
-            self.pending.update(self.loader.left)
-        MIDI.acquire()  # the app stays off the pedal while Claude may use it
-        self.entry.setEnabled(False)
-        self.proc.start("claude", args)
+    def _send(self, key, text):
+        p = self.wb.working if key != "global" else None
+        self.hub.send(key, text, system_prompt(key if p else None, p, self.wb.dirty))
 
-    def read_claude(self):
-        self.buf += bytes(self.proc.readAllStandardOutput())
-        *lines, self.buf = self.buf.split(b"\n")
-        for line in lines:
-            for kind, val in parse_event(line):
-                if kind == "session":
-                    self.session = val
-                elif kind == "text":
-                    self.say("Claude:", val)
-                elif kind == "tool":
-                    self.say("⚙", val, "#888")
-                    self.pending.update(g.parse_slot(x) for x in touched_slots(val))
-                elif kind == "error":
-                    self.say("⚠", val, "#f88")
+    def _wrote(self, slots):
+        self.wb.reload_after_claude(slots)
+        if slots:
+            self.pedal.scan(slots)
 
-    def claude_done(self, code, _status):
-        err = bytes(self.proc.readAllStandardError()).decode(errors="replace").strip()
-        if code and err:
-            self.say("⚠", err[-500:], "#f88")
-        self.proc = None
-        MIDI.release()
-        self.entry.setEnabled(True)
-        self.entry.setFocus()
-        if self.pending:
-            todo, self.pending = sorted(self.pending), set()
-            self.load(todo)
+    def closeEvent(self, e):
+        self.pedal.stop()
+        super().closeEvent(e)
 
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    pal = QPalette()
-    for role, c in [("Window", "#202124"), ("WindowText", "#ddd"), ("Base", "#17181a"), ("AlternateBase", "#26272a"),
-                    ("Text", "#ddd"), ("Button", "#2c2d30"), ("ButtonText", "#ddd"), ("Highlight", "#3d6fb3"),
-                    ("HighlightedText", "#fff"), ("PlaceholderText", "#777")]:
-        pal.setColor(getattr(QPalette.ColorRole, role), QColor(c))
-    app.setPalette(pal)
-    w = App()
+    theme.apply(app)
+    w = MainWindow()
     w.show()
     sys.exit(app.exec())
 
