@@ -1,0 +1,11 @@
+{"name": "Party Tonight",
+ "blocks": {
+   "DST": {"effect": "Green OD", "params": {"Gain": 10, "Tone": 60, "Volume": 70}},
+   "AMP": {"effect": "Mess DualV", "params": {"Gain": 62, "Bass": 55, "Middle": 45, "Treble": 62, "Presence": 55, "Volume": 55}},
+   "NR": {"effect": "Gate 1", "params": {"Threshold": 30}},
+   "CAB": {"effect": "Mess", "params": {"Low Cut": 80, "High Cut": 9000}},
+   "EQ": {"effect": "Guitar EQ 1", "params": {"125Hz": 0, "400Hz": -3, "800Hz": 2, "1.6kHz": 2, "4kHz": 0, "Volume": 50}},
+   "RVB": {"effect": "Room", "params": {"Mix": 12, "Decay": 30}},
+   "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}
