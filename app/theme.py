@@ -1,7 +1,7 @@
-"""Design tokens (the only place with colour/size literals) + app-wide palette/stylesheet. Spec 003: own fixed glass palette."""
+"""Design tokens (the only place with colour/size literals) + `qml_tokens()` for the QML view (specs 003 glass palette, 004 board)."""
 import os
 
-from PyQt6.QtGui import QColor, QFont, QPalette
+from PyQt6.QtGui import QColor
 
 font, icon_font, mono = "Noto Sans", "JetBrainsMono Nerd Font Propo", "JetBrainsMono Nerd Font Mono"
 font_small, font_desc, font_body, font_title, font_display = 12, 13, 14, 18, 24
@@ -29,6 +29,19 @@ s1, s2, s3, s4, s5, s6 = 4, 8, 12, 16, 24, 32
 r_plate, r_card, r_tile, r_pill = 20, 8, 12, 999
 glass = False  # set by apply()
 
+# --- spec 004 pedalboard tokens ---
+chassis_base, cable, jack = "#2a2f36", "#15171a", "#9aa3ab"
+metal, metal_dark = "#c3c9ce", "#6b737a"
+knob_cap, knob_cap_hi, knob_skirt, knob_knurl = "#1b1d21", "#3c4048", "#2b2e34", "#4a4f57"
+bevel_hi, shadow, scrim, pilot, ok = "#26ffffff", "#8c000000", "#66000000", "#e0453a", "#7fc8a9"
+ink_dark = "#14171a"  # print on mid-tone chassis
+meter_lo, meter_hi = "#5fb8d6", "#e0b050"
+font_value = 24
+cell_w, cell_h, cell_gap, knob_big, knob_mini, w_wide, w_medium = 92, 144, 12, 64, 16, 1440, 1100
+fx = os.environ.get("GP200_FX") != "0"  # MultiEffect shadows/glow (off for offscreen shots: layers do not render there)
+motion = os.environ.get("GP200_MOTION") != "0"
+durations = {"dur_s": 100, "dur_m": 200, "dur_l": 400}  # 0 when motion is off (see qml_tokens)
+
 
 def q(c, a=None):
     """QColor from a token; a = alpha 0..1 replacing the token's own alpha."""
@@ -38,84 +51,38 @@ def q(c, a=None):
     return c
 
 
-def css(c, a=None):
-    c = q(c, a)
-    return f"rgba({c.red()},{c.green()},{c.blue()},{c.alphaF():.3f})"
-
-
 def mix(c1, c2, t):
     a, b = QColor(c1), QColor(c2)
     return QColor(*(round(x * (1 - t) + y * t) for x, y in zip(a.getRgb()[:3], b.getRgb()[:3])))
 
 
-def ifont(px):
-    f = QFont(icon_font)
-    f.setPixelSize(px)
-    return f
-
-
-def icon_html(name, color=None):
-    c = f";color:{color}" if color else ""
-    return f'<span style="font-family:\'{icon_font}\'{c}">{glyphs[name]}</span>'
-
-
 bg = mix(dusk_dark, tint, glass_alpha)  # opaque fallback; apply() makes it translucent on Hyprland
 
 
-def apply(app):
+def apply(platform):
+    """Decide glass from the Qt platform name + environment (Hyprland on Wayland, not GP200_GLASS=0)."""
     global glass, bg
-    glass = (app.platformName() == "wayland" and bool(os.environ.get("HYPRLAND_INSTANCE_SIGNATURE"))
-             and os.environ.get("GP200_GLASS") != "0")
+    glass = platform == "wayland" and bool(os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")) and os.environ.get("GP200_GLASS") != "0"
     bg = q(tint, glass_alpha) if glass else mix(dusk_dark, tint, glass_alpha)
-    app.setStyle("Fusion")
-    f = QFont(font)
-    f.setPixelSize(font_body)
-    app.setFont(f)
-    pal = QPalette()
-    for role, c in [("Window", QColor(0, 0, 0, 0) if glass else bg), ("WindowText", q(text)), ("Base", q(base)), ("AlternateBase", q(alt)),
-                    ("Text", q(text)), ("Button", q(button)), ("ButtonText", q(text)), ("Highlight", q(accent)),
-                    ("HighlightedText", q(accent_text)), ("PlaceholderText", q(ink_soft)), ("ToolTipBase", q(popup_bg)),
-                    ("ToolTipText", q(text))]:
-        pal.setColor(getattr(QPalette.ColorRole, role), c)
-    for role in ("ButtonText", "WindowText", "Text"):
-        pal.setColor(QPalette.ColorGroup.Disabled, getattr(QPalette.ColorRole, role), q(ink_soft))
-    app.setPalette(pal)
-    pill = lambda h: f"border-radius:{h // 2}px;min-height:{h - 2}px;max-height:{h - 2}px"
-    app.setStyleSheet(f"""
-QFrame#plate {{ background:{css(plate)}; border:1px solid {css(plate_border)}; border-radius:{r_plate}px; }}
-QFrame#bar {{ background:{css(plate)}; border:1px solid {css(plate_border)}; border-left:{s1}px solid {warn}; border-radius:{r_tile}px; }}
-QLabel#pill {{ background:{css(plate)}; border:1px solid {css(plate_border)}; color:{dim}; font-size:{font_desc}px; padding:0 {s3}px; {pill(28)}; }}
-QLabel#slotpill {{ background:{accent_deep}; color:{accent_text}; font-weight:bold; font-size:{font_body}px; padding:0 {s3}px; {pill(32)}; }}
-QPushButton {{ background:transparent; border:1px solid {css(sel_border)}; color:{text}; padding:0 {s4}px; {pill(32)}; }}
-QPushButton:hover {{ background:{css(sel_fill)}; }}
-QPushButton:disabled {{ color:{css(ink_soft)}; border-color:{css(ink_off)}; background:transparent; }}
-QPushButton#primary {{ background:{accent}; border:1px solid {accent}; color:{accent_text}; font-weight:bold; }}
-QPushButton#primary:disabled {{ background:transparent; border-color:{css(ink_off)}; color:{css(ink_soft)}; }}
-QPushButton#icon {{ border:none; padding:0; min-width:32px; max-width:32px; font-family:'{icon_font}'; font-size:18px; }}
-QPushButton#power {{ border-radius:20px; min-width:38px; max-width:38px; min-height:38px; max-height:38px; padding:0; font-family:'{icon_font}'; font-size:20px; }}
-QLineEdit {{ background:{css(field_bg)}; border:1px solid {css(field_border)}; padding:0 {s3}px; selection-background-color:{accent}; {pill(32)}; }}
-QLineEdit#title {{ background:transparent; border:1px solid transparent; font-size:{font_display}px; font-weight:bold; padding:0 {s2}px; border-radius:{r_tile}px; min-height:44px; max-height:44px; }}
-QLineEdit#title:focus, QLineEdit#title:hover {{ background:{css(field_bg)}; border-color:{css(field_border)}; }}
-QLineEdit#input {{ {pill(40)}; padding-right:44px; }}
-QComboBox {{ background:{css(field_bg)}; border:1px solid {css(field_border)}; padding:0 {s3}px; {pill(32)}; }}
-QComboBox:disabled {{ color:{css(ink_soft)}; }}
-QTabBar {{ background:transparent; }}
-QTabBar::tab {{ background:{css(plate)}; border:1px solid {css(plate_border)}; color:{dim}; padding:0 {s4}px; min-height:30px; }}
-QTabBar::tab:selected {{ background:{accent}; border-color:{accent}; color:{accent_text}; font-weight:bold; }}
-QTabBar::tab:first {{ border-top-left-radius:16px; border-bottom-left-radius:16px; }}
-QTabBar::tab:last {{ border-top-right-radius:16px; border-bottom-right-radius:16px; }}
-QTabWidget::pane {{ border:0; background:transparent; top:{s3}px; }}
-QScrollArea, QScrollArea > QWidget > QWidget {{ background:transparent; }}
-QScrollBar:vertical {{ background:transparent; width:6px; margin:0; }}
-QScrollBar:horizontal {{ background:transparent; height:6px; margin:0; }}
-QScrollBar::handle {{ background:{css(sel_border)}; border-radius:3px; min-height:24px; min-width:24px; }}
-QScrollBar::add-line, QScrollBar::sub-line {{ width:0; height:0; }}
-QScrollBar::add-page, QScrollBar::sub-page {{ background:transparent; }}
-QSplitter::handle:hover {{ background:{css(sel_fill)}; border-radius:3px; }}
-QProgressBar {{ background:transparent; border:0; min-height:2px; max-height:2px; }}
-QProgressBar::chunk {{ background:{accent}; }}
-QTextBrowser {{ background:transparent; border:0; }}
-QMenu, QComboBox QAbstractItemView, QToolTip {{ background:{css(popup_bg)}; color:{text}; border:1px solid {css(sel_border)}; padding:{s1}px; }}
-QMenu::item {{ padding:{s1}px {s4}px; border-radius:{s1}px; }}
-QMenu::item:selected, QComboBox QAbstractItemView::item:selected {{ background:{accent}; }}
-""")
+
+
+def _qml(v):
+    if isinstance(v, QColor):
+        return v.name(QColor.NameFormat.HexArgb)
+    if isinstance(v, str) and v.startswith("#"):
+        return QColor(v).name(QColor.NameFormat.HexArgb)
+    if isinstance(v, dict):
+        return {k: _qml(x) for k, x in v.items()}
+    return v
+
+
+def qml_tokens():
+    """Plain dict of every token for the QML context property `T` (colours as #AARRGGBB)."""
+    names = ("font icon_font mono font_small font_desc font_body font_title font_display text dim ink_soft ink_off accent accent_deep "
+             "accent_text danger warn plate plate_border sel_fill sel_border field_bg field_border popup_bg block_colors glyphs s1 s2 s3 s4 "
+             "s5 s6 r_plate r_card r_tile r_pill glass bg glass_alpha chassis_base cable jack metal metal_dark knob_cap knob_cap_hi "
+             "knob_skirt knob_knurl ink_dark fx bevel_hi shadow scrim pilot ok meter_lo meter_hi font_value cell_w cell_h cell_gap knob_big knob_mini "
+             "w_wide w_medium motion").split()
+    out = {n: _qml(globals()[n]) for n in names}
+    out.update({k: v if motion else 0 for k, v in durations.items()})
+    return out

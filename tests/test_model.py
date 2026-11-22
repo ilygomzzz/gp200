@@ -233,3 +233,25 @@ class WorkbenchTests(unittest.TestCase):
         self.assertFalse(self.wb.rename("x" * 17))
         self.assertTrue(self.wb.rename("Fine"))
         self.assertTrue(self.wb.dirty)
+
+
+@unittest.skipIf(m is None, "PyQt6 not installed")
+class BridgePure(unittest.TestCase):
+    def test_unit_and_chain_view(self):
+        import bridge
+        p = preset()
+        v = bridge.unit_view(p, "AMP")
+        self.assertEqual(v["effect"], p["blocks"]["AMP"]["effect"])
+        self.assertEqual(len(v["mini"]), 3)
+        self.assertTrue(all(0 <= x <= 1 for x in v["mini"]))
+        info = g.find_effect("AMP", v["effect"])[1]
+        first = next(q for q in info["params"] if q["type"] == "knob")
+        want = (p["blocks"]["AMP"]["params"][first["name"]] - first["min"]) / (first["max"] - first["min"])
+        self.assertAlmostEqual(v["mini"][0], want)
+        p["blocks"]["AMP"]["effect"] = "#0x123"  # unknown effect: no catalog, no knobs
+        self.assertEqual(bridge.unit_view(p, "AMP")["mini"], [])
+        c = bridge.chain_view(p)
+        self.assertEqual(sorted(c["order"]), sorted(g.BLOCKS))
+        self.assertEqual(set(c["units"]), set(g.BLOCKS))
+        p["order"] = ["AMP"] + [b for b in g.BLOCKS if b != "AMP"]
+        self.assertEqual(bridge.chain_view(p)["order"][0], "AMP")
