@@ -65,6 +65,13 @@ def free_slots(names):
     return [s for s in sorted(names) if FACTORY <= s < LAST and names[s] == EMPTY]
 
 
+def slot_matches(label, name, query):
+    """Slot-grid filter: query is a substring of the label or the name (empty slots count as "vacío"); name None = unread."""
+    q = query.strip().lower()
+    shown = "vacío" if name == EMPTY else name or ""
+    return not q or q in label.lower() or q in shown.lower()
+
+
 def edit_msgs(preset, edit, fresh=()):
     """Apply one edit to a preset: -> (new_preset, [(msg_bytes, gap_s)]). Raises ValueError on invalid edits.
     edits: ("effect", block, name) ("param", block, pname, value) ("toggle", block, on) ("order", order)"""

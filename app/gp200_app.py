@@ -4,7 +4,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # app/ modules are top-level (theme, model, chat, widgets)
 
-from PyQt6.QtWidgets import QApplication, QSplitter, QTabWidget, QVBoxLayout, QWidget  # noqa: E402
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QPainter, QShortcut
+from PyQt6.QtWidgets import QApplication, QHBoxLayout, QLabel, QSplitter, QTabWidget, QVBoxLayout, QWidget  # noqa: E402
 
 import theme  # noqa: E402
 from chat import ChatHub, system_prompt  # noqa: E402
@@ -18,8 +20,10 @@ class MainWindow(QWidget):
     def __init__(self, pedal=None, hub=None):
         super().__init__()
         self.setWindowTitle("GP-200JR")
-        self.resize(1280, 800)
-        self.setMinimumSize(1000, 640)
+        if theme.glass:
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.resize(1440, 880)
+        self.setMinimumSize(1300, 640)  # 240+740+260 panels + 2 handles + 32 padding
         self.pedal = pedal or Pedal()
         self.hub = hub or ChatHub(self.pedal)
         self.wb = Workbench(self.pedal)
@@ -27,26 +31,34 @@ class MainWindow(QWidget):
         self.view = WorkbenchView(self.wb, lambda: self.slots.names)
 
         split = QSplitter()
-        for w, size in ((self.slots, 220), (self.view, 700), (self.chat, 360)):
+        for w, size in ((self.slots, 312), (self.view, 732), (self.chat, 340)):
             split.addWidget(w)
-            w.setMinimumWidth({220: 160, 700: 560, 360: 280}[size])
-        split.setSizes([220, 700, 360])
+            w.setMinimumWidth({312: 240, 732: 740, 340: 260}[size])
+        split.setSizes([312, 732, 340])
+        split.setHandleWidth(theme.s3)
         split.setCollapsible(0, False), split.setCollapsible(1, False)
         tabs = QTabWidget()
         tabs.addTab(split, "Presets")
         tabs.addTab(self.general, "Chat general")
-        QVBoxLayout(self).addWidget(tabs)
+        brand = QLabel(f'{theme.icon_html("app")}  GP-200JR')
+        brand.setStyleSheet(f"font-size:{theme.font_title}px; font-weight:500; padding-right:{theme.s4}px")
+        tabs.setCornerWidget(brand, Qt.Corner.TopLeftCorner)
+        for i in (0, 1):
+            QShortcut(QKeySequence(f"Ctrl+{i + 1}"), self, lambda i=i: tabs.setCurrentIndex(i))
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(theme.s4, theme.s4, theme.s4, theme.s4)
+        lay.addWidget(tabs)
 
         p, wb = self.pedal, self.wb
         p.slot_name.connect(self.slots.set_name)
-        p.failed.connect(lambda area, m: area == "scan" and self.slots.set_status(f"⚠ {m}", True))
+        p.failed.connect(lambda area, m: area == "scan" and self.slots.set_status(m.removeprefix("⚠ "), True))
         self.slots.slot_chosen.connect(wb.request_open)
         self.slots.reload_clicked.connect(self._scan)
         wb.loading.connect(self._opened)
         wb.guard.connect(lambda _: self.slots.set_current(wb.slot))
         wb.dirty_changed.connect(lambda d: wb.slot is not None and self.slots.set_dirty(wb.slot, d))
         wb.busy_changed.connect(self._busy)
-        p.scan_done.connect(lambda: self.slots.status.text().startswith("⚠") or self.slots.set_status("Listo"))
+        p.scan_done.connect(lambda: self.slots.failed or self.slots.set_status("Listo"))
         self.chat.submitted.connect(lambda t: self._send(wb.label, t))
         self.general.submitted.connect(lambda t: self._send("global", t))
         self.chat.new_chat.connect(lambda: self.hub.reset(wb.label))
@@ -57,6 +69,11 @@ class MainWindow(QWidget):
         wb.changed.connect(lambda _: self._title())
         wb.loaded.connect(lambda _: self._title())
         self._scan()
+
+    def paintEvent(self, _):
+        p = QPainter(self)
+        p.setCompositionMode(QPainter.CompositionMode.CompositionMode_Source)
+        p.fillRect(self.rect(), theme.bg)
 
     def _scan(self):
         self.slots.set_status("Leyendo la pedalera…")
@@ -100,6 +117,7 @@ class MainWindow(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    app.setDesktopFileName("gp200")  # Wayland app_id = gp200 (desktop entry, icon, Hyprland rule)
     theme.apply(app)
     w = MainWindow()
     w.show()

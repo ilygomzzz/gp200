@@ -1,98 +1,97 @@
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QCompleter, QDoubleSpinBox, QGridLayout, QHBoxLayout, QLabel,
-                             QScrollArea, QSlider, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import QComboBox, QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QVBoxLayout, QWidget
 
 import theme
 from model import effects_for, g, snap_label
+from widgets.knob import H as KH, W as KW, Knob
 
 
 class ParamRow:
-    """Label + slider + value (knob) or combo (options) or checkbox (switch); emits through `cb(name, value)`."""
+    """One catalog param: Knob (knob), pill combo (options) or pill toggle (switch); emits through `cb(name, value)`."""
 
-    def __init__(self, grid, row, p, cb, locked):
-        self.p, self.cb = p, cb
-        grid.addWidget(QLabel(p["name"].strip()), row, 0)
+    def __init__(self, p, cb, locked, color):
+        self.p = p
+        name = p["name"].strip()
         if p["type"] == "knob":
-            step = p["step"] or 1
-            self.slider, self.w = QSlider(Qt.Orientation.Horizontal), QDoubleSpinBox()
-            self.slider.setRange(0, round((p["max"] - p["min"]) / step))
-            self.w.setRange(p["min"], p["max"])
-            self.w.setSingleStep(step)
-            self.w.setDecimals(0 if step >= 1 else 2)
-            self.w.setFixedWidth(72)
-            self.w.setStyleSheet(f"font-family:{theme.mono}")
-            self.slider.valueChanged.connect(lambda i: self.w.setValue(p["min"] + i * step))
-            self.w.valueChanged.connect(lambda v: (self._sync(v), cb(p["name"], v)))
-            grid.addWidget(self.slider, row, 1)
-            grid.addWidget(self.w, row, 2)
-            self.step = step
-            if locked:
-                self.slider.setEnabled(False)
-                self.w.setEnabled(False)
+            self.w = Knob(p, color, locked)
+            self.w.valueChanged.connect(lambda i: cb(p["name"], self.w.real(i)))
         elif p.get("options"):
             self.w = QComboBox()
             for o in p["options"]:
-                self.w.addItem(o["name"], o["id"])
+                self.w.addItem(f"{name}: {o['name']}", o["id"])
             self.w.activated.connect(lambda i: cb(p["name"], self.w.itemData(i)))
-            grid.addWidget(self.w, row, 1, 1, 2)
         else:
-            self.w = QCheckBox()
+            self.w = QPushButton(name)
+            self.w.setCheckable(True)
+            self.w.setStyleSheet(f"QPushButton:checked {{ background:{theme.css(color, 0.25)}; border:1px solid {color}; }}")
             self.w.toggled.connect(lambda v: cb(p["name"], float(v)))
-            grid.addWidget(self.w, row, 1, 1, 2)
-
-    def _sync(self, v):
-        self.slider.blockSignals(True)
-        self.slider.setValue(round((v - self.p["min"]) / self.step))
-        self.slider.blockSignals(False)
 
     def set_value(self, v):
         self.w.blockSignals(True)
-        if isinstance(self.w, QDoubleSpinBox):
-            self.w.setValue(v)
-            self._sync(v)
+        if isinstance(self.w, Knob):
+            self.w.set_real(v)
         elif isinstance(self.w, QComboBox):
             self.w.setCurrentIndex(max(0, self.w.findData(v)))
         else:
             self.w.setChecked(bool(v))
         self.w.blockSignals(False)
+        self.w.update()
 
 
-class BlockEditor(QWidget):
+class BlockEditor(QFrame):
     effect_changed = pyqtSignal(str, str)
     param_changed = pyqtSignal(str, str, float)
     toggled = pyqtSignal(str, bool)
 
     def __init__(self):
         super().__init__()
-        self.block, self.key, self.rows = None, None, {}
-        self.title, self.picker, self.on = QLabel(), QComboBox(), QCheckBox("Encendido")
-        self.title.setStyleSheet(f"font-size:{theme.font_title}px; font-weight:bold")
-        self.title.setFixedWidth(72)
+        self.setObjectName("plate")
+        self.block, self.key, self.rows, self.color = None, None, {}, theme.text
+        self.disc, self.picker, self.on = QLabel(), QComboBox(), QPushButton(theme.glyphs["power"])
+        self.disc.setFixedSize(40, 40)
+        self.disc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.disc.setFont(theme.ifont(22))
+        self.picker.setFixedHeight(36)
+        self.picker.setMinimumWidth(240)
         self.picker.setEditable(True)
         self.picker.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.picker.completer().setFilterMode(Qt.MatchFlag.MatchContains)
         self.picker.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.picker.textActivated.connect(lambda t: self.block and self.effect_changed.emit(self.block, t))
+        self.on.setObjectName("power")
+        self.on.setCheckable(True)
         self.on.clicked.connect(lambda v: self.block and self.toggled.emit(self.block, v))
         self.desc = QLabel()
-        self.desc.setStyleSheet(f"color:{theme.dim}")
+        self.desc.setStyleSheet(f"color:{theme.dim}; font-size:{theme.font_desc}px")
         self.note = QLabel()
-        self.note.setStyleSheet(f"color:{theme.warn}")
-        self.grid_host = QWidget()
-        self.grid = QGridLayout(self.grid_host)
-        self.grid.setColumnMinimumWidth(0, 120)
-        self.grid.setColumnStretch(1, 1)
-        scroll = QScrollArea()
-        scroll.setWidget(self.grid_host)
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.note.setWordWrap(True)
+        self.note.setStyleSheet(f"color:{theme.warn}; font-size:{theme.font_desc}px")
+        self.knobs, self.pills = QWidget(), QHBoxLayout()
+        self.grid = QGridLayout(self.knobs)
+        self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setSpacing(theme.s2)
+        self.grid.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        body = QWidget()
+        bl = QVBoxLayout(body)
+        bl.setContentsMargins(0, 0, 0, 0)
+        bl.addWidget(self.note)
+        bl.addWidget(self.knobs)
+        bl.addLayout(self.pills)
+        bl.addStretch()
+        self.scroll = QScrollArea()
+        self.scroll.setWidget(body)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         head = QHBoxLayout()
-        for w, st in ((self.title, 0), (self.picker, 1), (self.on, 0)):
-            head.addWidget(w, st)
+        head.setSpacing(theme.s3)
+        head.addWidget(self.disc)
+        head.addWidget(self.picker, 1)
+        head.addWidget(self.on)
         lay = QVBoxLayout(self)
-        lay.setContentsMargins(theme.s2, theme.s2, theme.s2, 0)
-        for item in (head, self.desc, self.note, scroll):
-            lay.addLayout(item) if hasattr(item, "addWidget") else lay.addWidget(item, 1 if item is scroll else 0)
+        lay.setContentsMargins(theme.s4, theme.s3, theme.s4, theme.s3)
+        lay.addLayout(head)
+        lay.addWidget(self.desc)
+        lay.addWidget(self.scroll, 1)
 
     def focus_picker(self):
         self.picker.setFocus()
@@ -104,20 +103,36 @@ class BlockEditor(QWidget):
         if self.key != (block, blk["effect"]):
             self.key = (block, blk["effect"])
             self._rebuild(block, blk["effect"])
-        self.title.setText(block)
         self.on.setChecked(blk["on"])
-        self.on.setText("Encendido" if blk["on"] else "Apagado")
+        self.on.setToolTip("Apagar" if blk["on"] else "Encender")
+        self.on.setAccessibleName("Encendido" if blk["on"] else "Apagado")
         for name, row in self.rows.items():
             if name in blk["params"]:
                 row.set_value(blk["params"][name])
         self.block = block
 
+    def _layout_knobs(self):
+        knobs = [r.w for r in self.rows.values() if isinstance(r.w, Knob)]
+        cols = max(1, (self.scroll.viewport().width() + theme.s2) // (KW + theme.s2))
+        for i, w in enumerate(knobs):
+            self.grid.addWidget(w, i // cols, i % cols)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self._layout_knobs()
+
     def _rebuild(self, block, effect):
-        while self.grid.count():
-            self.grid.takeAt(0).widget().deleteLater()
+        for lay in (self.grid, self.pills):
+            while lay.count():
+                it = lay.takeAt(0)
+                if it.widget():
+                    it.widget().deleteLater()
         self.rows = {}
-        for r in range(self.grid.rowCount()):
-            self.grid.setRowStretch(r, 0)
+        self.color = theme.block_colors[block]
+        self.disc.setText(theme.glyphs[block])
+        self.disc.setToolTip(block)
+        self.disc.setStyleSheet(f"background:{theme.css(self.color, 0.25)}; color:{self.color}; border-radius:20px")
+        self.on.setStyleSheet(f"QPushButton:checked {{ background:{theme.css(self.color, 0.25)}; border:1px solid {self.color}; color:{self.color}; }}")
         self.picker.blockSignals(True)
         self.picker.clear()
         for eid, info in effects_for(block):
@@ -132,9 +147,14 @@ class BlockEditor(QWidget):
         self.desc.setText(info.get("desc", "") if info else "Efecto sin catálogo: solo se puede cambiar por otro")
         info = info or {"params": []}
         self.note.setText("")
-        self.grid.setRowStretch(len(info["params"]), 1)  # keep rows compact
-        for i, p in enumerate(info["params"]):
+        cb = lambda n, v: self.block and self.param_changed.emit(self.block, n, v)
+        for p in info["params"]:
             locked = block == "DLY" and p["name"] == "Time"
-            self.rows[p["name"]] = ParamRow(self.grid, i, p, lambda n, v: self.block and self.param_changed.emit(self.block, n, v), locked)
+            self.rows[p["name"]] = r = ParamRow(p, cb, locked, self.color)
+            if not isinstance(r.w, Knob):
+                r.w.setFixedHeight(32)
+                self.pills.addWidget(r.w)
             if locked:
                 self.note.setText("Time: lo fija el tempo del preset (120 BPM = 500 ms); aún no se puede cambiar.")
+        self.pills.addStretch()
+        self._layout_knobs()

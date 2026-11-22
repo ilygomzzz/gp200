@@ -12,7 +12,10 @@ Invariants every app spec respects (PyQt6 app in `app/`). Changing anything here
 ## Look
 - Colors, spacing, radii and fonts come only from `app/theme.py` tokens (no loose hex in widgets).
 - Spacing in multiples of 4. Min font 12 px. Monospace only for raw data (params, commands).
-- Dark Fusion palette from `theme.py`; empty/disabled things use `theme.dim`, errors `theme.danger`, the accent only for the active/selected thing.
+- Fusion + the app's own glass palette from `theme.py` (style inspired by desk-ui, no runtime link to it); empty/disabled things use `theme.dim`/`theme.ink_soft`, errors `theme.danger`, the accent only for the active/selected thing.
+- Glass: the window may be translucent (alpha only from `theme.glass_alpha`); real blur only from the compositor (Hyprland), one glass layer, inner panels are translucent plates, never a second blur; opaque fallback when not on Hyprland; popups/menus/tooltips opaque.
+- Category colours (`theme.block_colors`) identify block types; never the only carrier of state (pair with text or shape).
+- Glyph icons only from `theme.icon_font` via named `theme.glyphs`; every icon-only button has a Spanish tooltip and accessible name.
 - UI text in plain Spanish; code, comments, docs in English.
 
 ## Behaviour

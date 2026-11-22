@@ -35,6 +35,14 @@ class Helpers(unittest.TestCase):
         self.assertEqual(names, sorted(names))
         self.assertIn("SnapTone 1", [m.snap_label(e, i) for e, i in eff])
 
+    def test_slot_matches(self):
+        self.assertTrue(m.slot_matches("34B", "Crunch AZ", ""))
+        self.assertTrue(m.slot_matches("34B", "Crunch AZ", "34b"))
+        self.assertTrue(m.slot_matches("34B", "Crunch AZ", "  CRUN"))
+        self.assertFalse(m.slot_matches("34B", "Crunch AZ", "lead"))
+        self.assertTrue(m.slot_matches("34A", m.EMPTY, "vací"))
+        self.assertFalse(m.slot_matches("34A", None, "vacío"))
+
     def test_move_block_clamps(self):
         self.assertEqual(m.move_block(g.BLOCKS, "PRE", -1), g.BLOCKS)
         self.assertEqual(m.move_block(g.BLOCKS, "VOL", 1), g.BLOCKS)

@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QShortcut, QKeySequence
-from PyQt6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QStackedLayout,
-                             QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QProgressBar, QPushButton,
+                             QStackedLayout, QVBoxLayout, QWidget)
 from PyQt6.QtGui import QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression
 
@@ -10,7 +10,7 @@ from model import free_slots, g
 from widgets.block_editor import BlockEditor
 from widgets.chain_strip import ChainStrip
 
-EMPTY_TEXT = "Elige un slot de la lista para ver su cadena y charlar sobre él."
+EMPTY_TEXT = "Elige un slot para ver su cadena"
 
 
 class WorkbenchView(QWidget):
@@ -18,22 +18,25 @@ class WorkbenchView(QWidget):
         super().__init__()
         self.wb, self.slot_names = wb, slot_names  # slot_names(): {slot: name}
         self.label = QLabel()
-        self.label.setStyleSheet(f"font-size:{theme.font_title}px; font-weight:bold")
+        self.label.setObjectName("slotpill")
         self.name = QLineEdit()
-        self.name.setFixedWidth(200)
+        self.name.setObjectName("title")
+        self.name.setMinimumWidth(120)
         self.name.setValidator(QRegularExpressionValidator(QRegularExpression("[ -~]{0,16}")))
         self.name.editingFinished.connect(self._rename)
         self.mark = QLabel("● Sin guardar")
-        self.mark.setStyleSheet(f"color:{theme.warn}")
+        self.mark.setStyleSheet(f"color:{theme.warn}; font-weight:bold")
         self.discard_b, self.save_b, self.save_as_b = QPushButton("Descartar"), QPushButton("Guardar"), QPushButton("Guardar en…")
         self.save_b.setObjectName("primary")
         self.hint = QLabel("Preset de fábrica: guárdalo en un slot libre")
         self.hint.setStyleSheet(f"color:{theme.warn}")
         head = QHBoxLayout()
+        head.setSpacing(theme.s3)
         for w in (self.label, self.name, self.mark, self.hint):
             head.addWidget(w)
         head.addStretch()
         for w in (self.discard_b, self.save_as_b, self.save_b):
+            w.setSizePolicy(w.sizePolicy().horizontalPolicy().Fixed, w.sizePolicy().verticalPolicy())
             head.addWidget(w)
         self.bar = self._bar("", [("Descartar y cambiar", self._confirm), ("Seguir editando", self._cancel)])
         self.bar_text = self.bar.findChild(QLabel)
@@ -41,21 +44,30 @@ class WorkbenchView(QWidget):
         self.target = QComboBox()
         self.sa_row.layout().insertWidget(1, self.target)
         self.strip, self.editor = ChainStrip(), BlockEditor()
-        self.empty = QLabel(EMPTY_TEXT)
+        self.empty = QLabel(f'<span style="font-family:\'{theme.icon_font}\';font-size:48px;color:{theme.css(theme.ink_off)}">'
+                            f'{theme.glyphs["empty"]}</span><br><br>{EMPTY_TEXT}')
         self.empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.empty.setStyleSheet(f"color:{theme.dim}")
+        self.empty.setStyleSheet(f"color:{theme.dim}; font-size:{theme.font_body}px")
+        self.busy_bar = QProgressBar()
+        self.busy_bar.setTextVisible(False)
+        self.busy_bar.setRange(0, 1)
         self.content = QWidget()
         cl = QVBoxLayout(self.content)
         cl.setContentsMargins(0, 0, 0, 0)
+        cl.setSpacing(theme.s3)
+        cl.addWidget(self.busy_bar)
         cl.addWidget(self.strip)
         cl.addWidget(self.editor, 1)
         self.stack = QStackedLayout()
         self.stack.addWidget(self.empty)
         self.stack.addWidget(self.content)
-        self.status = QLabel("Leyendo la pedalera…")
-        self.status.setFixedHeight(24)
+        self.status = QLabel()
+        self.status.setObjectName("pill")
+        self._status("Leyendo la pedalera…", False)
         self.note = ""
         lay = QVBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(theme.s3)
         lay.addLayout(head)
         lay.addWidget(self.bar)
         lay.addWidget(self.sa_row)
@@ -69,6 +81,7 @@ class WorkbenchView(QWidget):
         f = QFrame()
         f.setObjectName("bar")
         lay = QHBoxLayout(f)
+        lay.setContentsMargins(theme.s4, theme.s2, theme.s4, theme.s2)
         lay.addWidget(QLabel(text))
         for t, fn in buttons:
             b = QPushButton(t)
@@ -97,7 +110,7 @@ class WorkbenchView(QWidget):
         wb.dirty_changed.connect(lambda _: self._buttons())
         wb.status.connect(self._status)
         wb.guard.connect(lambda lbl: (self.bar_text.setText(f"¿Descartar cambios de {lbl}?"), self.bar.show()))
-        wb.busy_changed.connect(lambda _: self._buttons())
+        wb.busy_changed.connect(self._busy)
         QShortcut(QKeySequence("Ctrl+S"), self, wb.save)
 
     def set_open(self, on):
@@ -132,9 +145,15 @@ class WorkbenchView(QWidget):
         self.content.setEnabled(wb.working is not None and not busy)
         self.name.setEnabled(not busy)
 
+    def _busy(self, what):
+        self.busy_bar.setRange(0, 0 if what else 1)
+        self._buttons()
+
     def _status(self, text, err):
+        text = text.removeprefix("⚠ ")
+        glyph = "error" if err else "busy" if text.endswith("…") else "ok"
+        self.status.setText(f"{theme.icon_html(glyph)}  {text}")
         self.status.setStyleSheet(f"color:{theme.danger if err else theme.text}")
-        self.status.setText(text)
 
     def _rename(self):
         if self.wb.working and self.name.text() != self.wb.working["name"] and not self.wb.rename(self.name.text()):

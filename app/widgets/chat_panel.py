@@ -1,5 +1,5 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QPushButton, QTextBrowser, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QTextBrowser, QVBoxLayout
 
 import theme
 
@@ -7,28 +7,47 @@ EMPTY = "Elige un slot de la lista para ver su cadena y charlar sobre él."
 HINT = "Pregúntale a Claude por este preset: qué hace cada bloque, cómo acercarlo a un sonido, qué pastilla usar."
 
 
-class ChatPanel(QWidget):
+class ChatPanel(QFrame):
     submitted = pyqtSignal(str)  # message text
     new_chat = pyqtSignal()
 
     def __init__(self, global_ctx=False):
         super().__init__()
+        self.setObjectName("plate")
         self.global_ctx, self.session, self.label, self.title_text = global_ctx, None, None, "Chat general" if global_ctx else "Chat"
         self.title = QLabel(self.title_text)
         self.title.setStyleSheet(f"font-size:{theme.font_body}px; font-weight:bold")
-        self.new_btn = QPushButton("Nueva conversación")
+        self.new_btn = QPushButton(theme.glyphs["new_chat"])
+        self.new_btn.setObjectName("icon")
+        self.new_btn.setToolTip("Nueva conversación")
+        self.new_btn.setAccessibleName("Nueva conversación")
         self.new_btn.clicked.connect(self.new_chat)
         self.log = QTextBrowser()
         self.log.setOpenExternalLinks(True)
+        self.log.document().setDefaultStyleSheet(f"p {{ margin-bottom:{theme.s2}px; }} code {{ font-family:'{theme.mono}'; }}")
+        self.log.setStyleSheet(f"font-size:{theme.font_desc}px")
         self.hint = QLabel()
         self.hint.setWordWrap(True)
-        self.hint.setStyleSheet(f"color:{theme.dim}")
+        self.hint.setStyleSheet(f"color:{theme.dim}; font-size:{theme.font_desc}px")
         self.entry = QLineEdit()
+        self.entry.setObjectName("input")
+        self.send_btn = QPushButton(theme.glyphs["send"])
+        il = QHBoxLayout(self.entry)
+        il.setContentsMargins(0, 0, theme.s1, 0)
+        il.addStretch()
+        il.addWidget(self.send_btn)
+        self.send_btn.setObjectName("icon")
+        self.send_btn.setToolTip("Enviar (Enter)")
+        self.send_btn.setAccessibleName("Enviar")
+        self.send_btn.clicked.connect(self._send)
+        self.send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.entry.returnPressed.connect(self._send)
         head = QHBoxLayout()
         head.addWidget(self.title, 1)
         head.addWidget(self.new_btn)
         lay = QVBoxLayout(self)
+        lay.setContentsMargins(theme.s3, theme.s3, theme.s3, theme.s3)
+        lay.setSpacing(theme.s2)
         lay.addLayout(head)
         for w in (self.log, self.hint, self.entry):
             lay.addWidget(w)
@@ -60,6 +79,7 @@ class ChatPanel(QWidget):
     def _refresh(self):
         on = self.session is not None and self.locked is None
         self.entry.setEnabled(on)
+        self.send_btn.setEnabled(on)
         self.new_btn.setEnabled(self.session is not None and not self.locked)
         ctx = "Pide un sonido, un cambio… (Enter)" if self.global_ctx else f"Pregunta o pide un cambio sobre {self.label}… (Enter)"
         self.entry.setPlaceholderText(self.locked or ctx if self.session else "")
