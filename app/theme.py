@@ -4,7 +4,8 @@ import os
 from PyQt6.QtGui import QColor
 
 font, icon_font, mono = "Noto Sans", "JetBrainsMono Nerd Font Propo", "JetBrainsMono Nerd Font Mono"
-font_small, font_desc, font_body, font_title, font_display = 12, 13, 14, 18, 24
+font_small, font_body, font_title, font_display = 12, 14, 18, 24
+font_desc = font_small  # alias kept for old call sites (13 folded into 12)
 text, dim = "#ffffff", "#b4cbcd"  # ink, inkDim (foam)
 ink_soft, ink_off = "#73ffffff", "#40ffffff"
 accent, accent_deep, accent_text = "#5a86a8", "#25456a", "#ffffff"
@@ -26,7 +27,7 @@ glyphs = {  # nf-md-*, codepoints read from the installed JetBrainsMono Nerd Fon
     "busy": 0xF0996, "error": 0xF0028, "new_chat": 0xF140F, "send": 0xF048A, "chat": 0xF0B79, "empty": 0xF02C5}
 glyphs = {k: chr(v) for k, v in glyphs.items()}
 s1, s2, s3, s4, s5, s6 = 4, 8, 12, 16, 24, 32
-r_plate, r_card, r_tile, r_pill = 20, 8, 12, 999
+r_plate, r_card, r_tile, r_pill, r_unit = 20, 8, 12, 999, 12
 glass = False  # set by apply()
 
 # --- spec 004 pedalboard tokens ---
@@ -37,6 +38,9 @@ bevel_hi, shadow, scrim, pilot, ok = "#26ffffff", "#8c000000", "#66000000", "#e0
 ink_dark = "#14171a"  # print on mid-tone chassis
 meter_lo, meter_hi = "#5fb8d6", "#e0b050"
 font_value = 24
+face_hi, face_lo, nameplate = "#1fffffff", "#2e000000", "#e614171a"  # enamel overlay + dark print band
+led_off, track_on_face, tick = "#73000000", "#4d14171a", "#9914171a"
+knob_face, face_max_h, track_code = 72, 344, 1.2  # 344 not 296: picker plate is 60 tall (name+desc) and the switch sits inside the face
 cell_w, cell_h, cell_gap, knob_big, knob_mini, w_wide, w_medium = 92, 144, 12, 64, 16, 1440, 1100
 fx = os.environ.get("GP200_FX") != "0"  # MultiEffect shadows/glow (off for offscreen shots: layers do not render there)
 motion = os.environ.get("GP200_MOTION") != "0"
@@ -82,7 +86,7 @@ def qml_tokens():
              "accent_text danger warn plate plate_border sel_fill sel_border field_bg field_border popup_bg block_colors glyphs s1 s2 s3 s4 "
              "s5 s6 r_plate r_card r_tile r_pill glass bg glass_alpha chassis_base cable jack metal metal_dark knob_cap knob_cap_hi "
              "knob_skirt knob_knurl ink_dark fx bevel_hi shadow scrim pilot ok meter_lo meter_hi font_value cell_w cell_h cell_gap knob_big knob_mini "
-             "w_wide w_medium motion").split()
+             "w_wide w_medium motion face_hi face_lo nameplate led_off track_on_face tick knob_face face_max_h r_unit track_code").split()
     out = {n: _qml(globals()[n]) for n in names}
     out.update({k: v if motion else 0 for k, v in durations.items()})
     return out

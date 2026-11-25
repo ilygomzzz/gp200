@@ -8,7 +8,7 @@ RowLayout {
     signal saveAsClicked()
     spacing: T.s3
     Rectangle {
-        implicitWidth: pillText.implicitWidth + 24; implicitHeight: 32; radius: 16; color: T.accent_deep
+        implicitWidth: pillText.implicitWidth + 24; implicitHeight: 32; radius: T.r_pill; color: T.accent_deep
         Text { id: pillText; anchors.centerIn: parent; text: board.slotLabel; color: T.accent_text; font.bold: true; font.pixelSize: T.font_body; font.family: T.font }
     }
     TextField {
@@ -35,7 +35,7 @@ RowLayout {
     Text {
         visible: board.factory
         text: "Preset de fábrica: guárdalo en un slot libre"
-        color: T.warn; font.pixelSize: T.font_desc; font.family: T.font
+        color: T.warn; font.pixelSize: T.font_small; font.family: T.font
     }
     Btn { text: "Descartar"; enabled: board.dirty && board.busy === ""; onClicked: board.discard() }
     Btn { text: "Guardar en…"; enabled: board.dirty && board.busy === ""; onClicked: hb.saveAsClicked() }

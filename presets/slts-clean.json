@@ -1,0 +1,9 @@
+{"name": "SLTS Clean",
+ "blocks": {
+  "PRE": {"effect": "COMP", "params": {"Sustain": 30, "Volume": 50}},
+  "AMP": {"effect": "L-Star CL", "params": {"Gain": 35, "Volume": 55, "Bass": 50, "Middle": 45, "Treble": 55}},
+  "CAB": {"effect": "Mess", "params": {"Volume": 50, "Low Cut": 80, "High Cut": 8000}},
+  "MOD": {"effect": "M-Chorus", "params": {"Mix": 55, "Rate": 0.8, "Depth L": 60, "Depth C": 50, "Depth R": 60}},
+  "RVB": {"effect": "Room", "params": {"Mix": 12, "Decay": 35}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}},
+ "order": ["NR","VOL","PRE","WAH","DST","AMP","CAB","EQ","MOD","DLY","RVB"]}

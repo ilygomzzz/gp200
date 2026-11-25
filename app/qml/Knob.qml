@@ -12,11 +12,12 @@ FocusScope {
     property color arcColor: T.accent
     property bool locked: false
     property bool mini: false
+    property bool onFace: false  // sits on a coloured face: dark track, white arc, printed ticks
     property string label: ""
     property real defaultValue: from
     property string lockTip: ""
     signal moved(real v)
-    readonly property real pad: mini ? 0 : 16
+    readonly property real pad: mini ? 0 : onFace ? 28 : 16
     readonly property real frac: to > from ? Math.max(0, Math.min(1, (value - from) / (to - from))) : 0
     readonly property int decimals: step >= 1 ? 0 : 2
     readonly property real cx: width / 2
@@ -33,19 +34,35 @@ FocusScope {
     function apply(v) {
         var s = Math.max(from, Math.min(to, Math.round((v - from) / step) * step + from))
         s = Number(s.toFixed(decimals))
-        if (s !== value) { moved(s); pop.name = label; pop.valueText = fmt(s); pop.open(); hide.restart() }
+        if (s !== value) {
+            moved(s); pop.name = label; pop.valueText = fmt(s)
+            var p = k.mapToItem(null, k.cx, k.cy)  // overlay popup: no room reserved around the knob
+            pop.x = p.x - pop.width / 2; pop.y = p.y - dia / 2 - 16 - pop.height
+            pop.open(); hide.restart()
+        }
     }
 
     Shape {
         visible: !k.mini
         anchors.fill: parent
         ShapePath {
-            strokeColor: T.ink_off; strokeWidth: 3; fillColor: "transparent"; capStyle: ShapePath.RoundCap
+            strokeColor: k.onFace ? T.track_on_face : T.ink_off; strokeWidth: k.onFace ? 4 : 3; fillColor: "transparent"; capStyle: ShapePath.RoundCap
             PathAngleArc { centerX: k.cx; centerY: k.cy; radiusX: k.dia / 2 + 6; radiusY: k.dia / 2 + 6; startAngle: 135; sweepAngle: 270 }
         }
         ShapePath {
-            strokeColor: k.locked ? "transparent" : k.arcColor; strokeWidth: 3; fillColor: "transparent"; capStyle: ShapePath.RoundCap
+            strokeColor: k.locked ? "transparent" : k.onFace ? T.text : k.arcColor; strokeWidth: k.onFace ? 4 : 3; fillColor: "transparent"; capStyle: ShapePath.RoundCap
             PathAngleArc { centerX: k.cx; centerY: k.cy; radiusX: k.dia / 2 + 6; radiusY: k.dia / 2 + 6; startAngle: 135; sweepAngle: Math.max(0.01, 270 * k.frac) }
+        }
+    }
+    Shape {  // 11 printed ticks over the 270 deg sweep (dashed arc, dash = 2 px)
+        visible: k.onFace
+        anchors.fill: parent
+        ShapePath {
+            id: tickPath
+            readonly property real r: k.dia / 2 + 11
+            strokeColor: T.tick; strokeWidth: 5; fillColor: "transparent"; strokeStyle: ShapePath.DashLine
+            dashPattern: [0.4, Math.PI * 1.5 * r / 10 / 5 - 0.4]
+            PathAngleArc { centerX: k.cx; centerY: k.cy; radiusX: tickPath.r; radiusY: tickPath.r; startAngle: 135; sweepAngle: 270 }
         }
     }
     Rectangle { visible: !k.mini; x: k.cx - k.dia / 2; y: k.cy - k.dia / 2; width: k.dia; height: k.dia; radius: k.dia / 2; color: T.knob_skirt }
@@ -92,6 +109,7 @@ FocusScope {
         anchors.fill: parent
         enabled: !k.mini && !k.locked
         hoverEnabled: true
+        preventStealing: true  // a parent Flickable must not scroll while a knob is turned
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         property real y0: 0
         property real v0: 0
@@ -134,6 +152,6 @@ FocusScope {
         onAccepted: { k.apply(Number(text)); visible = false; k.forceActiveFocus() }
         Keys.onEscapePressed: { visible = false; k.forceActiveFocus() }
     }
-    ValuePopup { id: pop; parent: k; x: (k.width - width) / 2; y: -height - 8 }
+    ValuePopup { id: pop; parent: Overlay.overlay }
     Timer { id: hide; interval: 600; onTriggered: pop.close() }
 }

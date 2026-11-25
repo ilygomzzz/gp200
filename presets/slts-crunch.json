@@ -1,0 +1,9 @@
+{"name": "SLTS Crunch",
+ "blocks": {
+  "DST": {"effect": "SM Dist", "params": {"Gain": 55, "Tone": 45, "Volume": 60}},
+  "AMP": {"effect": "Mess DualV", "params": {"Gain": 35, "Presence": 50, "Volume": 50, "Bass": 55, "Middle": 45, "Treble": 55}},
+  "NR": {"effect": "Gate 1", "params": {"Threshold": 30}},
+  "CAB": {"effect": "Mess", "params": {"Volume": 50, "Low Cut": 80, "High Cut": 7500}},
+  "RVB": {"effect": "Room", "params": {"Mix": 8, "Decay": 30}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}},
+ "order": ["VOL","PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB"]}

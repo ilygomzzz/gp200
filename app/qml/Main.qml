@@ -70,7 +70,7 @@ ApplicationWindow {
                                 id: target
                                 implicitWidth: 160; implicitHeight: 32
                                 model: board.freeSlots.length ? board.freeSlots.map(function (f) { return f.label }) : ["No hay slots libres"]
-                                background: Rectangle { radius: 16; color: T.field_bg; border.color: T.field_border }
+                                background: Rectangle { radius: T.r_pill; color: T.field_bg; border.color: T.field_border }
                             }
                             Btn { text: "Guardar aquí"; enabled: board.freeSlots.length > 0; onClicked: { saveAs.visible = false; board.saveAs(board.freeSlots[target.currentIndex].slot) } }
                             Btn { text: "Cancelar"; onClicked: saveAs.visible = false }
@@ -91,7 +91,7 @@ ApplicationWindow {
                             opacity: board.busy !== "" ? 0.5 : 1; enabled: board.busy === ""
                         }
                         Item { visible: !board || !board.open; Layout.fillHeight: true }
-                        StatusPill { Layout.fillWidth: true; text: board ? board.status : ""; error: !!board && board.statusError }
+                        StatusPill { Layout.fillWidth: false; Layout.alignment: Qt.AlignLeft; text: board ? board.status : ""; error: !!board && board.statusError }
                     }
                 }
                 Item { id: rightDock; visible: win.wide; Layout.preferredWidth: 360; Layout.fillHeight: true }

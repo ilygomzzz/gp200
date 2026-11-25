@@ -1,0 +1,12 @@
+{"name": "BeQuiet Intro",
+ "blocks": {
+  "DST": {"effect": "Green OD", "params": {"Gain": 15, "Tone": 55, "Volume": 70}},
+  "AMP": {"effect": "Mess DualV", "params": {"Gain": 30, "Presence": 55, "Volume": 50, "Bass": 45, "Middle": 55, "Treble": 60}},
+  "NR": {"effect": "Gate 1", "params": {"Threshold": 10}},
+  "CAB": {"effect": "Mess", "params": {"Volume": 50, "Low Cut": 90, "High Cut": 7500}},
+  "MOD": {"effect": "G-Chorus", "params": {"Depth": 60, "Rate": 0.8, "Volume": 50}},
+  "DLY": {"effect": "BBD Delay S", "params": {"Mix": 15, "Time": 500, "Feedback": 20}},
+  "RVB": {"effect": "Room", "params": {"Mix": 20, "Pre Delay": 30, "Decay": 45}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB","VOL"]}

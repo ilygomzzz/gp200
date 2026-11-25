@@ -28,14 +28,14 @@ Rectangle {
                 textFormat: TextEdit.RichText
                 wrapMode: TextEdit.Wrap
                 text: cp.view ? cp.view.html : ""
-                color: T.text; font.pixelSize: T.font_desc; font.family: T.font
+                color: T.text; font.pixelSize: T.font_small; font.family: T.font
                 background: null
                 Accessible.name: "Conversación"
                 onTextChanged: Qt.callLater(function () { fl.contentY = Math.max(0, fl.contentHeight - fl.height) })
                 onLinkActivated: function (l) { Qt.openUrlExternally(l) }
             }
         }
-        Text { Layout.fillWidth: true; visible: text !== ""; text: cp.view ? cp.view.hint : ""; wrapMode: Text.WordWrap; color: T.dim; font.pixelSize: T.font_desc; font.family: T.font }
+        Text { Layout.fillWidth: true; visible: text !== ""; text: cp.view ? cp.view.hint : ""; wrapMode: Text.WordWrap; color: T.dim; font.pixelSize: T.font_small; font.family: T.font }
         TextField {
             id: input
             Layout.fillWidth: true; Layout.preferredHeight: 40

@@ -33,7 +33,8 @@ Same app, same model, same behaviour, but the view becomes a live rig, drawn by 
 - **Phase 1 — QML shell + pedalboard + knobs**: everything 002/003 does, in QML. Units are stompboxes
   for every block (category chassis colour), close-up with knobs, slot grid, chat, responsive layout.
   `app/widgets/` is deleted at the end of the phase.
-- **Phase 2 — gear art**: amp head, cabinet, rack units, EQ faders, treadles; art family per effect `desc`.
+- **Phase 2 — polish + rig scene**: quick touches from `polish.md` (P1–P5), then a stage (amp stack, rack,
+  pedalboard on a stage mat, chain strip for order), art family per effect `desc`; art cells below 1100 px.
 - **Phase 3 — alive**: audio listener (meter + tuner), signal-lit cables, preset/effect transitions.
 
 ## Out of scope
@@ -99,19 +100,35 @@ Behaviour (real pedal, slot 34B or a free slot ≥ 34A):
 - Window opaque off Hyprland / `GP200_GLASS=0`; glass (wallpaper blurred through) on Hyprland.
 - UI thread never blocks > 50 ms (scan of 255 slots keeps the board responsive).
 
-### Phase 2
-Screenshots (1888×1016 unless noted):
-- **B2-rig.png** (34B realistic): AMP unit is an amp head (tolex frame, faceplate, row of mini knobs,
-  pilot light lit when ON), CAB a cabinet (grille, speaker config from desc e.g. "4x12"), MOD/DLY/RVB rack
-  units (1U faceplate, small display with main value e.g. "500 ms"), EQ a fader bank, WAH/VOL a treadle,
-  other blocks stompboxes. Units sit on a common floor line; cables still connect jack to jack.
-- **J2-amp.png**: close-up of AMP = full amp faceplate with knobs in one row, pilot jewel, nameplate.
-- **K2-rack.png**: close-up of DLY = rack face, display "500 ms · Mix 35" and knobs.
-- **L2-eq.png**: close-up of EQ = vertical faders with frequency labels.
-- **M2-families.png** (a scratch grid of the art families, one unit each): every family visibly distinct;
-  no real brand logo, name or trade-dress shape anywhere on the art.
-Behaviour: same interactions as phase 1 on every unit kind (faders and treadle obey the knob keyboard/
-wheel/drag rules); changing the effect of a block changes its art family when the new desc maps elsewhere.
+### Phase 2 — polish + rig scene (rewritten 2026-11-25, see `polish.md`)
+Part A, quick touches (shots 1888×1016 and 1200 unless noted; fake pedal with realistic values, e.g. Gain 55):
+- **B1-polish.png**: stompbox codes printed on a dark nameplate band in the block colour; every block's code
+  ≥ 4.5:1 (numbers in `notes.md`); unlit LEDs are filled dark lenses, lit ones in block colour.
+- **C1-polish.png**: close-up face ≤ 296 px high (rest of the plate neutral glass), knobs 72 px centred in one row,
+  no empty band above them, value bubble still shown while turning; LED + footswitch at the bottom centre with
+  "Encendido"/"Apagado"; effect picker is a dark nameplate pill (name 18 px + description), no Basic-style field.
+- **C2-arc.png**: one knob on each of the 11 block faces; the value arc and printed ticks are visible on all.
+Part B, rig scene (≥ 1100 px wide):
+- **B2-rig.png** (34B realistic): the board plate is a stage — dark wall, rubber stage-mat floor, horizon ~58 %
+  down, one top-left key light, contact shadows on the floor. Back line: amp head (tolex, panel, pilot jewel lit
+  when ON) on a cabinet (grille cloth, speaker config from desc e.g. "4x12"); a rack case with MOD/DLY/RVB as 1U
+  units whose displays show the main value in the block colour ("500 ms"). Floor: a pedalboard with rails holding
+  PRE/DST/NR/EQ as stompboxes (EQ with mini faders), WAH/VOL as treadles at the right. Cables run in chain order
+  between unit jacks ("Guitarra" enters at the floor's left edge, "Salida" leaves the head); OFF blocks have a
+  dark LED and a dark cable segment. Under the stage a chain strip of 11 chips (glyph + code) in chain order.
+- **B2-medium.png** (1200 wide): same scene scaled; labels below 12 px effective are hidden (tooltip instead).
+- **D2-compact.png** (945 wide): no scene; art cells (each block drawn as its kind) in chain order.
+- **I2-reorder.png**: dragging a chip in the chain strip moves the block; scene units keep their places, cables
+  re-route; Ctrl+←/→ and the context menu do the same.
+- **J2-amp.png**, **K2-rack.png** (display "500 ms · Mix 35"), **L2-eq.png** (vertical faders with frequency
+  labels): close-up faces drawn by the same unit components as the stage, at larger size.
+- **M2-families.png** (scratch grid, every family × kind): every family visibly distinct; no real brand logo,
+  name or trade-dress shape anywhere; textures look seamless (no tile seams).
+Behaviour: same interactions as phase 1 on every unit kind (clicking a scene unit or a chip selects the block;
+faders and treadles obey the knob keyboard/wheel/drag rules); Tab order follows the chain order; changing a
+block's effect changes its art family when the new desc maps elsewhere; selection moves the spotlight and lifts
+the unit (≤ 200 ms, instant with `GP200_MOTION=0`); all art also renders with `GP200_FX=0` (shadows are sprites,
+not MultiEffect). Real pedal: edits on every kind still audible; no change to what is sent.
 
 ### Phase 3
 Screenshots:
@@ -152,9 +169,24 @@ Behaviour:
    visible; never records to disk; failure = "Sin audio" inline. `numpy` becomes an app dependency
    (the CLI stays stdlib only).
 
+## Constitution change 5 (user OK 2026-11-25; applied by the implementer in task 2.0)
+Replace the **gear art** sentence in Look with: "Gear art = original drawings: geometry and colour in
+QtQuick.Shapes from `theme` tokens; colourless alpha material tiles and shadow/spotlight sprites generated by
+`tools/make_textures.py` (committed in `app/assets/`, no photos, no logos, no third-party art); no real brand
+logos/names/trade dress in art (catalog desc text with ® stays as text)."
+
 ## Decisions (user OK 2026-11-22)
 - Design, phases and constitution changes approved ("DALE").
 - Q1 audio source: unknown yet; label the meter "Salida" and verify by a short recording in phase 3.
 - Q2 audio listening: off by default, only after pressing "Escuchar".
 - Q3 old widget UI: deleted at the end of phase 1 (git history is the fallback).
 - Q4 art priority: the gear used in the user's presets in `presets/` first.
+
+## Decisions (user OK 2026-11-25, on `polish.md`)
+- Phase 2 = polish quick touches P1–P5 first, then the rig scene (`polish.md` #1).
+- Scene layout: units placed **by kind** (amp stack + rack on the back line, stompboxes/treadles on the floor);
+  signal order shown by cables in chain order + a **chain strip** under the stage, where reorder lives.
+- Floor: **rubber stage mat** (not wood).
+- Windows < 1100 px: **art cells**, no scene.
+- Constitution change 5 (generated colourless alpha textures + shadow/spotlight sprites) approved.
+- Skeleton loading bars are **static** (no pulse), respecting the ≤ 400 ms motion rule.

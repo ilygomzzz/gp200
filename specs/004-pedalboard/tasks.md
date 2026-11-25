@@ -42,19 +42,65 @@ Never write to the pedal outside slot 34B or a free slot ≥ 34A.
   (toggle by footswitch audible, reorder, knobs, save/readback, discard, guard, Claude hold); live resize
   1888 → 880; `G1-glass.png` (grim). Done: checklist ticked in `review.md`.
 
-## Phase 2 — gear art
-- [ ] 2.1 **Art mapping** — `app/art.py` `art_for(block, name, desc)`; tests: TS-808 desc → `od_green`,
-  "Marshall® JCM800" → `brit_gold`, "Fender® Tweed Deluxe" → `tweed`, a 4x12 cab → speakers 4, unknown →
-  block default, every catalog effect maps to a family with tokens (loop over `data/effects.json`).
-- [ ] 2.2 **Tokens** — `theme.chassis` families + knob variants; contrast check of each `ink` on `body`/
-  `face` (small script, numbers in `notes.md`).
-- [ ] 2.3 **Board units** — `AmpHead.qml`, `Cabinet.qml`, `RackUnit.qml`, `Treadle.qml`, mini stompbox for
-  NR, EQ faders on the unit; `Unit.qml` Loader picks by `kind`. Done: B2 shot.
-- [ ] 2.4 **Fader** — `Fader.qml` (Knob's input rules, role Slider). Done: test like 1.9.
-- [ ] 2.5 **Close-up faces** — `app/qml/faces/` head, cabinet, rack (display with 2 main values), EQ,
-  treadle. Done: J2, K2, L2 shots; effect change switches family.
-- [ ] 2.6 **Art audit** — M2 families grid shot; check no logo/brand/copied shape. Real-pedal smoke:
-  edits on every kind still audible.
+## Phase 2 — polish + rig scene (rewritten 2026-11-25 from `polish.md`; user decisions in spec.md)
+Shots use the fake pedal with realistic values (e.g. Gain 55, Tone 40, Volume 70), offscreen, `GP200_FX=0`.
+
+### Part A — quick touches (they survive inside the scene)
+- [x] 2.A1 **Tokens** — `app/theme.py` + `qml_tokens()`: `face_hi face_lo nameplate led_off track_on_face tick
+  knob_face face_max_h r_unit track_code` (values in polish.md); `font_desc` aliased to `font_small`; radius
+  literals 10/14/16/18 in `app/qml` → `r_unit`/`r_tile`/`r_pill`. Done: token test lists them; contrast of each
+  block colour on `nameplate` (all ≥ 4.5) pasted in `notes.md`; `grep -nE 'radius: (10|14|16|18)\b' app/qml` empty.
+- [x] 2.A2 **Stompbox** — `Stompbox.qml`, `Led.qml`, `Unit.qml`: nameplate band, enamel overlay, filled LED lens,
+  footswitch 24. Done: B1-polish shot.
+- [x] 2.A3 **Close-up face** — `CloseUp.qml`, `ValuePopup.qml`, `Knob.qml`: face capped at `face_max_h`, knob row
+  centred at `knob_face`, popup as overlay (no `topPadding`), LED + switch + "Encendido"/"Apagado" bottom-centre.
+  Done: C1-polish shot; turning a knob shows the bubble; Space/click on the switch toggles.
+- [x] 2.A4 **Picker nameplate** — `CloseUp.qml`: styled editable ComboBox (contentItem, popup, indicator) holding
+  name + description. Done: C1-polish shows no Basic field; type + Enter still sets the effect (existing test).
+- [x] 2.A5 **Knob on face** — `Knob.qml` `onFace`: `track_on_face` track, white arc 4 px, 11 printed ticks, value
+  chip. Done: C2-arc shot.
+- [x] 2.A6 **Static skeleton + small fixes (trivial)** — `SlotGrid.qml` "…" → static skeleton bar; `StatusPill.qml`
+  icon hidden when text empty. Done: A1 re-shot has no icon-only pill.
+
+### Part B — rig scene (≥ 1100 px; art cells below)
+- [ ] 2.0 **Constitution + textures** — apply "Constitution change 5" (spec.md) to `constitution.md`;
+  `tools/make_textures.py` (numpy, fixed seed) → `app/assets/textures/` `tolex powder brushed grille_weave tread
+  stage_mat shadow_contact spot` (colourless alpha PNG, tileable, < 200 KB total). Done: test = deterministic
+  hash per file + seamless edges (first/last column and row match within 1 level); constitution diff matches.
+- [ ] 2.1 **Art mapping** — `app/art.py` `art_for(block, name, desc)` → `{kind, family, speakers}`; tests: TS-808 →
+  `od_green`, "Marshall® JCM800" → `brit_gold`, "Fender® Tweed Deluxe" → `tweed`, 4x12 cab → speakers 4, unknown →
+  block default, every catalog effect maps to a family with tokens.
+- [ ] 2.2 **Tokens** — `theme.chassis` families + knob variants + stage tokens (`stage_wall stage_wall_hi stage_mat
+  stage_horizon board_tolex rail tex_* stage_w stage_h chip_h`); contrast of each `ink` on body/face in `notes.md`.
+- [ ] 2.3 **Stage** — `Stage.qml` (wall, stage mat, horizon, spotlight, contact shadows, zone layout by kind,
+  uniform scale to board width, labels hidden below 12 px effective) replaces the unit row in `Pedalboard.qml`
+  for ≥ 1100 px; `bridge.py` units gain `kind`, `family`. Done: B2-rig, B2-medium shots (with placeholder boxes per
+  kind until 2.4–2.6 land).
+- [ ] 2.4 **Amp stack** — `AmpHead.qml` (tolex + texture, panel, knobs, pilot jewel), `Cabinet.qml` (grille
+  weave, piping, cone count, "4x12" print). Done: B2-rig shows head on cab; J2-amp shot.
+- [ ] 2.5 **Rack** — `RackUnit.qml` (brushed 1U, ears, display with 2 values in block colour, 3 knobs) in a rack
+  case on a stand. Done: K2-rack shot ("500 ms · Mix 35").
+- [ ] 2.6 **Floor units** — pedalboard (tolex board + rails) with `Stompbox.qml` (from 2.A2, family colours,
+  powder texture), NR mini, EQ with `Fader.qml` (Knob's input rules, role Slider), `Treadle.qml` (WAH/VOL, rocker
+  angle = value, toe LED). Done: L2-eq shot; fader test like 1.9.
+- [ ] 2.7 **Cables + chain strip** — cables in chain order between unit jack points, following animated items,
+  OFF segments dark (absorbs polish item 6); `ChainStrip.qml` with Unit's input code (drag, Ctrl+←/→, Space,
+  Enter, context menu), Tab order = chain order, selection syncs scene ↔ chip ↔ close-up (spotlight + 4 px lift).
+  Done: I2-reorder shot + 3 frame grabs mid-reorder; existing reorder tests pass.
+- [ ] 2.8 **Compact art cells** — < 1100 px: chain-order cells drawing each block as its kind at cell size.
+  Done: D2-compact shot; resize 1888 → 945 → 1888 switches cleanly.
+- [ ] 2.9 **Close-up faces** — `app/qml/faces/` reuse the 2.4–2.6 components at larger size (no second drawing).
+  Done: J2, K2, L2 from the same components; effect change switches family.
+- [ ] 2.10 **Art audit** — M2-families grid (family × kind); no logo/brand/copied silhouette; no tile seams;
+  `GP200_FX=0` renders everything. Real-pedal smoke on a free slot ≥ 34A: edits on every kind still audible.
+
+### Later polish (not in phase 2 unless trivial while touching the file)
+- Selection caret on the close-up pointing at the selected unit (polish item 5).
+- Header: "Guardado en 34B" chip when clean, actions only when dirty (item 8).
+- Status pill left-aligned at content width (item 9); busy line naming the operation (item 12).
+- Empty board with ghost units + shortcuts hint in the close-up area (item 10).
+- Slot card hierarchy: code dim, name 14 px one line (item 11).
+- Drop `font_desc`, DemiBold instead of bold everywhere (item 7 remainder); dock/drawer size tokens.
 
 ## Phase 3 — alive
 - [ ] 3.1 **DSP** — `app/audio.py` `level_db`, `pitch_hz`, `note_of`; tests on synthetic sines (E2, A2,

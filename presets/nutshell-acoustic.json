@@ -1,0 +1,10 @@
+{"name": "Nutshell Acoust",
+ "blocks": {
+   "PRE": {"effect": "AC Sim", "params": {"Mode": "Jumbo", "Body": 62, "Top": 55, "Volume": 55}},
+   "DST": {"effect": "Green OD", "on": false},
+   "DLY": {"effect": "Analog", "on": false, "params": {"Time": 500}},
+   "AMP":{"effect": "AC Pre", "params": {"Volume": 55, "Tone": 52, "Balance": 50, "EQ Freq": 40, "EQ Q": 40, "EQ Gain": 45}},
+   "CAB": {"effect": "JUMBO", "params": {"Volume": 55, "Low Cut": 80, "High Cut": 12000}},
+   "RVB": {"effect": "Room", "params": {"Mix": 20, "Pre Delay": 15, "Decay": 45}},
+   "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ }}

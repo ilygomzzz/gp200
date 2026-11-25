@@ -1,0 +1,10 @@
+{"name": "SLTS Solo",
+ "blocks": {
+  "DST": {"effect": "SM Dist", "params": {"Gain": 75, "Tone": 55, "Volume": 65}},
+  "AMP": {"effect": "Mess DualV", "params": {"Gain": 45, "Presence": 55, "Volume": 55, "Bass": 50, "Middle": 60, "Treble": 55}},
+  "NR": {"effect": "Gate 1", "params": {"Threshold": 30}},
+  "CAB": {"effect": "Mess", "params": {"Volume": 50, "Low Cut": 80, "High Cut": 8000}},
+  "DLY": {"effect": "Analog", "params": {"Mix": 12, "Time": 500, "Feedback": 20}},
+  "RVB": {"effect": "Room", "params": {"Mix": 12, "Decay": 40}},
+  "VOL": {"effect": "Volume", "params": {"Volume": 100}}},
+ "order": ["VOL","PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB"]}

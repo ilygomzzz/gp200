@@ -148,6 +148,11 @@ DLY Time locked + 003 note (warn 13) above the knobs. Unknown effect: 003 copy, 
 - Locked: arcs `ink_off`, lock glyph replaces the pointer, input ignored, tooltip = the DLY note.
 
 ## Gear (phase 2) — original art families
+> **Partly superseded (2026-11-25).** At ≥ 1100 px the board is the *Rig scene* below (units placed by kind, order
+> in the chain strip). Still valid: `art_for` rules, the families table and `theme.chassis`. The paragraph "Kinds
+> inside the 92×144 cell (floor line y 112)" now applies **only to compact art cells** (< 1100 px, task 2.8);
+> its close-up faces sentence is refined by "Close-up faces" in the Rig scene section.
+
 `art_for(block, effect_name, desc)` (pure, `app/art.py`, unit-tested) → `{kind, family}`; colours of each
 family live in `theme.chassis[family]` = `{body, face, ink, knob}`. Keyword match on `desc` + `name`,
 case-insensitive, first rule wins; unmatched → the block's default family.
@@ -173,6 +178,158 @@ fader bank (fader 24×160, same input rules as Knob, accessible role Slider); tr
 whose angle follows the first knob param (Position/Volume) + knobs.
 No art carries a real logo, brand name, model number or a copied shape (e.g. no round fuzz face, no
 diamond grille cloth pattern, no script logos); nameplates show the Valeton catalog effect name.
+
+## Rig scene (phase 2 part B) — design source for tasks 2.0–2.10
+Decisions (spec.md 2026-11-25): units by kind + chain strip for order; rubber stage mat; < 1100 px = art cells;
+generated colourless alpha textures + sprites (constitution change 5). Part A (2.A1–2.A6) is unaffected.
+
+### Stage frame and scale
+- Authored in **stage units** at 1600×480 (`stage_w`, `stage_h`) inside one `Item` (`Stage.qml`) with
+  `scale: s`, `transformOrigin: TopLeft`, `s = (boardW − 32) / 1600`; the board plate height becomes
+  `480·s + 16 + chip_h + 8 + 32` (stage, gap, strip, padding). At 1888×1016: boardW 1184 → s 0.72 → stage 1152×346.
+- **wide (≥ 1440)** and **medium (1100–1439)**: same scene, only `s` changes (medium ≈ 0.46–0.66).
+  Text inside the stage is authored at 18 su and shown only when `18·s ≥ 12` (s ≥ 0.67); below that it hides and
+  the information lives in the chip tooltip. Rack display digits follow the same rule (below it the display shows a
+  block-colour level bar of the first value).
+- **compact (< 1100)**: no stage; art cells in chain order (`## Gear (phase 2)` cell kinds, `## Board geometry`).
+- Layer order (z): wall 0 · mat 1 · spotlight 2 · back-line contact/wall shadows 3 · back-line units 4 · cables 5 ·
+  pedalboard 6 · floor contact shadows 7 · floor units 8 · jack plates 9.
+
+### Zones (stage units; x, y = top-left)
+```
+0                                                                                                      1600
++--------------------------------------------------------------------------------------------------------+ 0
+| wall (stage_wall; light falloff: stage_wall_hi top-left → stage_wall bottom-right)                     |
+|                       ___ handle                                                                       |
+|                 +--------------+ head 380,14  300x96          +-----------+ rack case 920,92 260x180  |
+|                 |  [o o o o o o] (*) |                         | MOD 1U    | units 240x48 at x 930,     |
+|                 +--------------+                               | DLY 1U    | y 104 / 156 / 208          |
+|                 |##############| cab 380,110  300x190          | RVB 1U    |                            |
+|                 |## ( )  ( ) ##|                               +-----------+                 [Salida]   |
+|                 |## ( )  ( ) ##|                                 | stand |   legs 260..300   plate      |
+|  horizon y 278 =|##############|=================================|=======|=============== 1480,180 48x72|
+|  mat (stage_mat + stage_mat tex)  feet y 300                                                          |
+|   o== Guitarra   +-------------------------------------------------------------------------------+    |
+|   plug 40,392    | PRE    DST    NR    EQ          WAH      VOL        pedalboard 300,316 1000x152 |   |
+|                  | 372    520    668   796         944      1100       units top y 326 (NR y 358)  |   |
+|                  +===================================== rails (y 452, 460) =========================+  |
++--------------------------------------------------------------------------------------------------------+ 480
+```
+- Back line (feet at y 300, overlapping the horizon so they stand on the mat): **amp stack** x 380–680 (cab
+  380,110 300×190 + 4 feet 20×6 at y 300; head 380,14 300×96 on top, handle 120×8 centred at y 6);
+  **rack case** 920,92 260×180 on a stand (2 legs 8×40 `metal_dark` at x 940 and 1152, y 260, crossbar 212×6 at
+  y 290). Rack slots are fixed top→bottom MOD, DLY, RVB (by kind, not chain).
+- Floor: **pedalboard** 300,316 1000×152, `board_tolex` + `tolex` texture, radius 12, two aluminium rails
+  (`rail`, 1000×4 at y 452 and 460 relative to stage, `brushed` texture). Units on it, x positions above; widths:
+  PRE 96, DST 96, NR 76 (mini), EQ 96, WAH 104, VOL 104; gap 52.
+- **Jack plates**: "Guitarra" = a 1/4" plug lying on the mat at 40,392 with its cable entering from x −20;
+  "Salida" = wall plate 1480,180 48×72 (`metal` + `brushed`, chrome socket Ø16), label under it on the wall.
+  Labels 18 su `T.dim`, hidden by the text rule.
+
+### Lighting, shadows, spotlight
+- One key light from top-left. Every body: enamel overlay (`face_hi` → transparent at 0.5 → `face_lo`), 1 px
+  `bevel_hi` on top and left edges, 3 px `face_lo` strip on the right edge (side in shadow).
+- Contact shadow: sprite `shadow_contact.png` stretched to `unit width × 1.15` by 24 su, x offset +6, its centre
+  on the unit's bottom edge, opacity `tex_shadow` 0.6. Back-line units also get a wall shadow: same sprite
+  rotated 0°, `width × 1.0` by 60 % of unit height, offset +14,−8, opacity 0.3, drawn on the wall.
+- Spotlight: sprite `spot.png` 640×420 su, white, opacity `tex_spot` 0.10, centred on the selected unit's centre-x
+  with its top at y −60; default (no selection) on the amp stack. `Behavior on x` `dur_m` OutCubic.
+- All shadows are sprites: identical with `GP200_FX=0` (no MultiEffect in the stage).
+
+### Per-kind drawings (sizes in su; colours from `theme.chassis[family]` = body/face/ink/knob)
+| Kind | Size | Construction | Materials (texture, opacity token) | Live parts |
+|---|---|---|---|---|
+| stompbox (PRE, DST) | 96×132, r 12 | body + 8 su lighter top lip (`face_hi` ×2); up to 3 knobs Ø20 at y 16; nameplate 72×24 at y 52 (2.A2 band, code in block colour); LED Ø8 at y 84; footswitch Ø28 at y 96; chrome side jacks 6×12 at y 40 (in = left, out = right). `fuzz_violet`: top edge slanted 10 su (wedge), never round | `powder` 0.12 | mini knobs = first 3 values, LED, footswitch |
+| mini stompbox (NR) | 76×100, r 10 | 1 knob, nameplate 60×20, LED, switch Ø24 | `powder` 0.12 | same |
+| EQ | 96×132 | `eq_white` body; 5 fader slots 6×40 (`ink_dark` 60 %) at y 14, x step 16, thumbs 12×6 `metal` at the band value; nameplate y 64; LED y 92; switch Ø28 y 104 | `powder` 0.12 | thumbs = 5 band values |
+| treadle (WAH, VOL) | 104×140 | base 104×36 at bottom (`treadle_black`, chrome side strips 4 su); rocker 96×112 above it drawn as a trapezoid: top edge 8 su narrower each side and lowered `20·(1 − value)` su (heel-down = low); toe LED Ø6 at rocker top-right; side jacks on the base | rocker `tread` 0.5; base `powder` 0.12 | rocker angle = Position/Volume, toe LED |
+| amp head (AMP) | 300×96, r 8 | tolex box; 4 corner protectors 12×12 L-shapes `metal_dark`; control panel inset 12, 276×52 at y 32 in family face (+ 1 px piping `rail`); up to 6 knobs Ø22 evenly at y 58 in family knob colour; pilot jewel Ø12 at x 268 (`pilot` when ON, `led_off` when OFF; LED rule: + nameplate text dims); input jack Ø8 chrome at x 20; effect name 18 su DemiBold in family ink at panel top-left (catalog name only, no script logo) | body `tolex` 0.35; panel `brushed` 0.25 (`brit_gold`, `copper`, `blackface` 0.15) | knobs = first 6 values, jewel |
+| cabinet (CAB) | 300×190, r 8 | tolex box + corners; grille 268×158 inset 16 in family grille colour; piping 2 su (cream for wheat, `metal` for silver, `metal_dark` for black); speakers from `speakers` (1 → Ø120 centred; 2 → Ø100 side by side; 4 → Ø70 2×2) as 1 su `ink_dark` 25 % circles + dust cap Ø20 at 15 %, drawn under the cloth; "4x12" 14 su bottom-right on tolex (text rule) | `tolex` 0.35, grille `grille_weave` 0.55 | none on stage |
+| rack 1U (MOD, DLY, RVB) | 240×48 each, in a 260×180 case (tolex frame 10 su, two 8 su rails with screw dots Ø3 every 16) | `rack_dark` face; ears 14 su each side with 2 screw dots; display 96×28 at x 24, y 10 (`chassis.rack_dark.display` bg, 1 px `face_lo` top inner shadow, 1 px `bevel_hi` bottom) with "500 · 35" mono 18 su in block colour; 3 knobs Ø18 at x 140/172/204; power LED Ø6 at x 226 in block colour; jacks = left ear (in), right ear (out) | face `brushed` 0.25 | display values, knobs, LED |
+| ghost (no info / empty slot) | kind size | dashed 1 su `ink_off` outline in place, 40 % | none | none |
+
+No logo, brand name, model number or copied silhouette (no round fuzz face, no diamond grille pattern, no
+script plate, no recognisable boutique box outline); 2.10 checks each kind.
+
+### Textures and sprites (`tools/make_textures.py` → `app/assets/textures/`)
+Generator: numpy only, `rng = numpy.random.default_rng(200)`, noise filtered in the frequency domain (FFT on the
+tile = periodic, so tiles are seamless by construction), written with `QImage` (PyQt6, already a dependency), no
+Pillow. Encoding = **signed alpha**: pixel RGB is white where the value v > 0.5 and black where v < 0.5, alpha =
+`|v − 0.5| · 2 · 255` — one colourless tile both lights and shades whatever token colour is under it. Used via
+`Image { fillMode: Image.Tile; smooth: true; opacity: T.tex_* }` inside a `Rectangle { radius; clip: true }` of
+the body shape (clip is rectangular, so a tile may show ≤ 1 su past a rounded corner; the body's own antialiased
+edge is drawn on top to cover it). Non-rectangular shapes (wedge, treadle trapezoid) use the tile only inside their
+bounding rectangle minus the cut, accepted as is.
+
+| File | Size | Tiles | Generation |
+|---|---|---|---|
+| `tolex.png` | 128×128 | yes | pebble grain: white noise blurred σ 1.5 + 0.5 × blurred σ 4, then `tanh` contrast ×3 |
+| `powder.png` | 128×128 | yes | fine speckle: white noise blurred σ 0.6, amplitude 0.35 |
+| `brushed.png` | 256×32 | yes | per-row 1-D noise, horizontal periodic box blur 96 px, plus 5 % white-noise sparkle |
+| `grille_weave.png` | 64×64 | yes | threads period 4 px: `sin` along x on even 2-px bands, along y on odd (over/under), × (1 + 0.2 blurred noise σ 6) |
+| `tread.png` | 32×32 | yes | horizontal ribs period 8 px: top 2 px highlight (v 0.85), 2 px shadow (v 0.2), rest 0.5 |
+| `stage_mat.png` | 256×256 | yes | rubber mat: coin bumps Ø5 on an 8-px grid (highlight top-left, shade bottom-right) + low-freq stains (blurred σ 32, amplitude 0.15) |
+| `shadow_contact.png` | 256×64 | no | black, alpha = gaussian ellipse σx 0.32·w, σy 0.28·h, peak 0.9 |
+| `spot.png` | 512×512 | no | white, alpha = `(1 − r)²` with r normalised to the ellipse, peak 1.0 |
+Budget < 200 KB total. Test (2.0): file hashes are stable across runs; for tiling files, first vs last column and
+row differ by ≤ 1 level on average (wrap check); non-tiling sprites have alpha 0 at their border.
+
+### Stage tokens (add to `theme.py`, existing ones unchanged)
+`stage_wall #0c121a`, `stage_wall_hi #16202c`, `stage_mat #17191c`, `stage_horizon 0.58`, `board_tolex #1c1d20`,
+`rail #8c949b`, `tex_tolex 0.35`, `tex_powder 0.12`, `tex_brushed 0.25`, `tex_grille 0.55`, `tex_tread 0.5`,
+`tex_mat 0.4`, `tex_shadow 0.6`, `tex_spot 0.10`, `stage_w 1600`, `stage_h 480`, `chip_h 32`; `chassis.rack_dark`
+gains `display #0c1416`. Horizon line: 1 px `bevel_hi` across the stage at y 278 plus a 24 su `face_lo` → transparent
+gradient on the mat (wall/floor contact).
+
+### Cables (chain order, live)
+- Links k = 0..11: from the out-point of `order[k−1]` (k = 0: Guitarra plug) to the in-point of `order[k]`
+  (k = 11: Salida plate). In/out points are properties of each unit item (`inPt`, `outPt` in stage units, read
+  from the item's current `x/y` so lift/selection animations drag the cable along). Stompbox/EQ/treadle/NR: side
+  jacks; head: input jack front-left, output = head back-right (x+300, y+80); cab: back-left (x+12, y+170);
+  rack 1U: left ear in, right ear out.
+- Path: cubic `M p0 C c0 c1 p1`; `dx = p1.x − p0.x`; `sag = min(120, 24 + 0.15·|dx|)`; `c0 = (p0.x + sign·min(80,
+  |dx|/2), max(p0.y, p1.y) + sag)`, `c1 = (p1.x − sign·min(80, |dx|/2), max(p0.y, p1.y) + sag)` — cables droop
+  towards the mat. AMP → CAB directly in a row: a short 4 su `cable` "speaker lead" from head out to cab in, no plugs.
+- Stroke: 6 su `cable` + inner 2 su: block colour of the link's source at 70 % if that block is ON, else `ink_off`
+  (003 rule). Plugs: 10×16 su `metal` rectangles with a 1 su `metal_dark` collar at both ends, on top of units.
+- Reorder: links are recomputed from the new order; the whole cable layer cross-fades (`opacity` 1 → 0.3 → 1,
+  `dur_m`) — units do not move.
+
+### Chain strip (`ChainStrip.qml`, outside the stage scale, real px)
+- Row under the stage, height `chip_h` 32 + 8 padding; 11 chips in `board.order`; chip width
+  `min(96, (stripW − 10·4) / 11)`, spacing 4, radius `r_pill`, bg `nameplate`, content: LED dot Ø6 (block colour
+  ON / `led_off` OFF) + glyph 14 + code `font_small` DemiBold `track_code` in block colour (OFF: `ink_soft`).
+  A 2 px `ink_off` line runs behind the chips through their centres (the signal), lit segments in block colour 70 %.
+- Selected chip: 2 px `accent` border; keyboard focus: same border + 2 px outer `accent` 40 % ring.
+- Input (moves here from `Unit.qml`): click select, double-click toggle, drag (> 8 px) lifts the chip (scale 1.05),
+  drop bar 3×32 `accent` between chips, Escape cancels; ←/→ neighbour, Ctrl+←/→ move, Space toggle, Enter edit
+  effect; context menu = phase-1 unit menu (same Spanish copy). Tab order: chips in chain order (the stage units
+  are not tab stops — one focus path). Accessible name as phase-1 unit.
+- Tooltip (hover/focus 600 ms): "DLY · Pure · encendido".
+
+### Stage interactions
+- Click a unit → `board.select`; click its footswitch/toe area → toggle; double-click → toggle; right-click →
+  the chain-strip context menu for that block. No drag on stage units (their place is by kind); drag lives in
+  the strip (constitution: every drag action has keyboard + menu equivalents — satisfied there).
+- Hover: `face_hi` overlay doubles, cursor pointing hand, tooltip as the chip.
+- Selected: unit lifts −6 su (`dur_m`), contact shadow 1.1× wider at 0.45, spotlight moves to it, chip selected,
+  close-up shows its face.
+
+### States
+- **Empty (no slot)**: wall + mat + empty pedalboard; amp stack, rack and floor units as ghosts; on the wall,
+  centred at y 200: glyph `empty` 48 `ink_off` + "Elige un slot para ver su cadena" (font_body, `T.dim`; this text
+  is real px, outside the scale). Strip hidden.
+- **Loading**: ghosts as above, strip chips as static skeletons (`ink_off` 60 % width bars).
+- **Busy (saving / Claude)**: stage + strip opacity 0.6, input off, existing busy bar on the plate top.
+- **Error**: unchanged (status pill / inline bar); the stage keeps the last good chain.
+- **Dirty**: no change on the stage (header chip carries it).
+
+### Close-up faces (2.9)
+Inside the Part A face container (≤ `face_max_h`, nameplate picker, bottom-centre LED + switch): the kind's
+panel sub-component, from the same file as the stage unit, at face size — `AmpHead.panel` (knobs Ø`knob_face`,
+jewel), `Cabinet.grille` (Low/High Cut knobs over the cloth), `RackUnit.face` (display 240×48 with 2 values,
+knobs), EQ fader bank (`Fader.qml` 24×160), `Treadle.plate` (side view, angle follows the first knob param) +
+knobs. Stompbox kinds keep the 2.A3 face with family colours + `powder`.
 
 ## Alive (phase 3)
 - **Listener** (`app/audio.py`): `QProcess` `["pw-record", "--target", "gp200_stereo_clean", "--format",

@@ -1,0 +1,13 @@
+{"name": "Nutshell Solo",
+ "blocks": {
+   "PRE": {"effect": "COMP", "params": {"Sustain": 35, "Volume": 50}},
+   "WAH": {"effect": "V-Wah", "on": false},
+   "DST": {"effect": "Green OD", "params": {"Gain": 15, "Tone": 55, "Volume": 70}},
+   "AMP": {"effect": "Bog RedV", "params": {"Gain": 55, "Presence": 45, "Volume": 50, "Bass": 45, "Middle": 65, "Treble": 52}},
+   "NR":  {"effect": "Gate 1", "params": {"Threshold": 25}},
+   "CAB": {"effect": "Bog"},
+   "DLY": {"effect": "Analog", "params": {"Mix": 18, "Time": 500, "Feedback": 25, "Trail": 1}},
+   "RVB": {"effect": "Plate", "params": {"Mix": 22, "Decay": 55, "High Damp": 55, "Trail": 1}},
+   "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ },
+ "order": ["VOL","PRE","WAH","DST","AMP","NR","CAB","EQ","MOD","DLY","RVB"]}

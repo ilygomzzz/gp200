@@ -33,7 +33,7 @@ Rectangle {
                 leftPadding: 36; font.pixelSize: T.font_body; font.family: T.font; color: T.text
                 placeholderTextColor: T.ink_soft
                 Accessible.name: "Buscar slot"
-                background: Rectangle { radius: 16; color: T.field_bg; border.color: T.field_border }
+                background: Rectangle { radius: T.r_pill; color: T.field_bg; border.color: T.field_border }
                 Text { x: 12; anchors.verticalCenter: parent.verticalCenter; text: T.glyphs.search; font.family: T.icon_font; font.pixelSize: 16; color: T.dim }
                 onTextChanged: sg.query = text
                 Keys.onEscapePressed: text = ""
@@ -101,8 +101,9 @@ Rectangle {
                         }
                         Text { x: 8; y: 4; text: (row.index + 1) + "ABC"[card.index]; color: card.vacio || card.nm === "" ? T.dim : T.text; font.bold: true; font.pixelSize: T.font_small; font.family: T.font }
                         Text { x: 8; y: 20; width: parent.width - 16; height: 28; wrapMode: Text.Wrap; maximumLineCount: 2; elide: Text.ElideRight
-                            text: card.nm === "" ? "…" : card.vacio ? "vacío" : card.nm; font.pixelSize: T.font_small; font.family: T.font
+                            text: card.nm === "" ? "" : card.vacio ? "vacío" : card.nm; font.pixelSize: T.font_small; font.family: T.font
                             color: card.vacio || card.nm === "" ? T.ink_soft : T.text }
+                        Rectangle { visible: card.nm === ""; x: 8; y: 26; width: parent.width * 0.6; height: 8; radius: 4; color: T.ink_off }  // static skeleton (no pulse: motion rule)
                         Rectangle { visible: card.cur && board.dirty; x: parent.width - 12; y: 6; width: 6; height: 6; radius: 3; color: T.warn }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -114,7 +115,7 @@ Rectangle {
                 }
             }
         }
-        StatusPill { Layout.fillWidth: true; text: board ? board.scanStatus : ""; error: !!board && board.scanError }
+        StatusPill { Layout.fillWidth: false; Layout.alignment: Qt.AlignLeft; text: board ? board.scanStatus : ""; error: !!board && board.scanError }
     }
     Connections { target: board; function onStateChanged() { if (board.slot >= 0) sg.focusSlot = board.slot } }
 }

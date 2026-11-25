@@ -42,7 +42,7 @@ FocusScope {
         else return
         e.accepted = true
     }
-    Rectangle { anchors.fill: parent; radius: 14; color: area.containsMouse && !u.dragging ? T.sel_fill : "transparent"
+    Rectangle { anchors.fill: parent; radius: T.r_unit; color: area.containsMouse && !u.dragging ? T.sel_fill : "transparent"
         border.width: u.selected || u.activeFocus ? 2 : 0; border.color: T.accent; opacity: u.selected ? 1 : 0.6 }
     Stompbox { block: u.block; ghost: u.ghost; on: u.on; mini: u.ghost ? [] : u.info.mini }
     Text {

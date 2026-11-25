@@ -57,6 +57,35 @@ class Tokens(unittest.TestCase):
             theme.motion = old
 
 
+def _lum(c):
+    f = lambda v: v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(c.redF()) + 0.7152 * f(c.greenF()) + 0.0722 * f(c.blueF())
+
+
+def contrast(fg, bg):
+    a, b = sorted((_lum(QColor(fg)), _lum(QColor(bg))), reverse=True)
+    return (a + 0.05) / (b + 0.05)
+
+
+@unittest.skipIf(theme is None, "PyQt6 not installed")
+class Polish(unittest.TestCase):
+    def test_new_tokens_exported(self):
+        t = theme.qml_tokens()
+        for k in "face_hi face_lo nameplate led_off track_on_face tick knob_face face_max_h r_unit track_code".split():
+            self.assertIn(k, t)
+        self.assertEqual(t["font_desc"], t["font_small"])
+
+    def test_block_colours_readable_on_nameplate(self):
+        # nameplate (90 % opaque) over the enamel face = chassis tinted 60 % with the block colour
+        plate = QColor(theme.nameplate)
+        for blk, col in theme.block_colors.items():
+            u = theme.mix(theme.chassis_base, col, 0.6)
+            flat = QColor.fromRgbF(*(plate.getRgbF()[i] * plate.alphaF() + u.getRgbF()[i] * (1 - plate.alphaF()) for i in range(3)))
+            r = contrast(col, flat)
+            print(f"contrast {blk} {r:.2f}")
+            self.assertGreaterEqual(r, 4.5, blk)
+
+
 @unittest.skipIf(theme is None, "PyQt6 not installed")
 class QmlSmoke(unittest.TestCase):
     def test_main_loads_without_warnings(self):

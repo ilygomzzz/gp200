@@ -17,7 +17,7 @@ Flow {
                     model: modelData.options.map(function (o) { return modelData.label + ": " + o.name })
                     currentIndex: modelData.options.findIndex(function (o) { return o.id === board.values[modelData.name] })
                     onActivated: function (i) { board.setParam(modelData.name, modelData.options[i].id) }
-                    background: Rectangle { radius: 16; color: T.field_bg; border.color: T.field_border }
+                    background: Rectangle { radius: T.r_pill; color: T.field_bg; border.color: T.field_border }
                     Accessible.name: modelData.label
                 }
             }
@@ -27,7 +27,7 @@ Flow {
                     text: modelData.label; checkable: true
                     checked: board.values[modelData.name] === 1
                     onClicked: board.setParam(modelData.name, checked ? 1 : 0)
-                    background: Rectangle { radius: 16; color: parent.checked ? Qt.alpha(pills.tint, 0.25) : "transparent"
+                    background: Rectangle { radius: T.r_pill; color: parent.checked ? Qt.alpha(pills.tint, 0.25) : "transparent"
                         border.color: parent.checked ? pills.tint : T.sel_border }
                 }
             }

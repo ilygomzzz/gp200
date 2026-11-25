@@ -74,3 +74,45 @@ then a pill row; plate = "flex". The implementation matches that: 3 knobs left-a
 - Switch/combo pills and "Tweedy" picker not visible on this effect (it has none).
 
 Verdict round 2: APPROVED for phase 1 (task 1.14 on real pedal/Hyprland still pending).
+
+# Phase 2 part A (2.A1-2.A6) — offscreen, no pedal
+
+CHANGES
+
+Tests: 34 OK. No hex literals outside `app/theme.py` (grep over `app/qml` and `app/*.py`); `grep -nE 'radius: (10|14|16|18)\b' app/qml` empty. Warnings from QML: 0 across all my runs.
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| 2.A1 tokens exported, `font_desc` alias, radii literals gone | pass | `theme.py` diff, `Polish.test_new_tokens_exported`, grep empty |
+| 2.A1 nameplate contrast >= 4.5 | pass | `Polish.test_block_colours_readable_on_nameplate` composes the 90 % plate over the 60 % tint face and asserts every block (min CAB 5.23, max VOL 9.37, matches notes.md). Maths is correct. Caveat: asserts block colour as text on plate; `ink_dark` is no longer used on faces |
+| 2.A2 stompbox nameplate, LED lens, enamel | pass | `B1-polish.png`: dark code band with block-coloured text legible on all 11 units, filled LED, footswitch larger |
+| 2.A3 close-up face capped, knobs centred, LED + switch bottom-centre, popup overlay | pass with a defect | `C1-polish.png`: face 344 px, knobs centred, switch + "Apagado" bottom-centre. Popup is an overlay (`C2-arc-turning.png`), opaque, does not reserve space. Defect below |
+| 2.A3 turning a knob shows the bubble | pass | `C2-arc-turning.png` "Gain 6" bubble above the knob, overlapping the picker plate (acceptable, opaque overlay) |
+| 2.A3 Space/click on switch toggles | pass | click: LED off -> on; Space with no Tab: toggles back; Tab x4 reaches Footswitch, Space toggles. 0 warnings |
+| 2.A4 picker looks like a nameplate; type + Enter sets effect | pass | `C1-polish.png`; Ctrl+A, type "Bellman", Enter -> AMP effect "Bellman 59B", board label updated. Popup list `R2-picker-popup.png`: opaque, 32 px rows, highlighted current, opens from the arrow |
+| 2.A5 knob on face: track, white arc, ticks, value chip | pass | `C1-polish.png`, `R2-compact-945-tall.png`; arc visible on the AMP gold face. Not checked on every block colour |
+| 2.A6 static skeleton, no icon-only pill | pass | `A1-polish-empty.png`: static bars in slot cards, only the "Leyendo la pedalera..." pill with text |
+| Compact 945 | pass at 945x1016 (`R2-compact-945-tall.png`); degraded at 945x800 (see F2) | |
+
+## Failures
+
+F1 (must fix). Dragging a knob scrolls the face. `app/qml/CloseUp.qml:~76-82` puts the knob Flow in a `Flickable` whose `contentHeight` (body = Flow 148 + `ParamPills` + column spacing 12) exceeds the viewport by ~12 px even at 1888, so the Flickable is interactive and steals the vertical drag from `Knob.qml` MouseArea (`app/qml/Knob.qml:~110`, no `preventStealing`). Evidence: `C2-arc-turning.png` — during the drag the whole knob row and the value chips jump up 12 px (knob centre y 465 -> 453) and return on release; a press without movement does not shift anything. Expected: no layout movement while turning. Fix any of: `preventStealing: true` on the Knob MouseArea (also stops Flickable flicking while a knob is held), `interactive: contentHeight > height` plus not reserving the empty `ParamPills` spacing (e.g. `spacing` only when pills are visible), or raise the face so the knob row fits without overflow.
+
+F2 (should fix, minor). At 945x800 with a 6-knob effect (`Bellman 59N`, `R2-compact-945.png`) the knob row is clipped by the face: dials cut in half, labels and values invisible, only scroll-by-wheel reveals them. Face cap 344 minus header/switch leaves ~150 px for a 148 px row plus pills. Expected: the knob row is never clipped; give the Flickable a minimum height or let the switch share the row at narrow heights. At 1016 tall everything fits.
+
+## Deviations in notes.md
+
+| Deviation | Verdict |
+|---|---|
+| `face_max_h` 344 vs 296 | accept. Picker is 60 tall and the switch lives inside the face, 296 cannot hold them; the token comment records why. polish.md/design.md still say 296: the designer should align them |
+| Face top-aligned, no trailing spacer | accept. `C1-polish.png` reads well; the empty plate below the face is the board's remaining space, not a slab |
+| StatusPill hidden when text empty | accept (matches 2.A6 intent and the empty-state shot) |
+| Footswitch Tab focus + Space (interactive only) | accept; verified, and it satisfies the constitution rule keyboard == mouse. Suggestion: draw a visible focus ring (not checked) |
+| Ticks stroke 5 / dash 2, pad 28, >8 knobs use `knob_big` | accept |
+
+## Notes and suggestions
+- `B1-polish.png` and `C1-polish.png` are byte-identical (same full-window grab); fine for the criteria, but the label "C1" should say "close-up" in notes.
+- The fake catalog gives "Efecto sin catálogo..." for Bellman; test-data artefact, not an app bug.
+- Not verified: real pedal, MultiEffect shadows (FX=0), motion (`GP200_MOTION=0` used), ticks on every block colour. My exercise scripts are in the session scratchpad only; extra shots: `C2-arc-turning.png`, `R2-picker-popup.png`, `R2-compact-945.png`, `R2-compact-945-tall.png`.
+
+Verdict part A: CHANGES (F1 required; F2 recommended). Everything else passes.

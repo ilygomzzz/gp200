@@ -8,6 +8,8 @@ Item {
     signal clicked()
     width: size; height: size
     scale: area.pressed ? 0.94 : 1
+    activeFocusOnTab: interactive
+    Keys.onSpacePressed: if (interactive) clicked()
     Accessible.role: Accessible.Button
     Accessible.name: on ? "Apagar" : "Encender"
     Rectangle { anchors.fill: parent; radius: width / 2; color: T.metal_dark }
