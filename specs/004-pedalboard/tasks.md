@@ -102,6 +102,58 @@ Shots use the fake pedal with realistic values (e.g. Gain 55, Tone 40, Volume 70
 - Slot card hierarchy: code dim, name 14 px one line (item 11).
 - Drop `font_desc`, DemiBold instead of bold everywhere (item 7 remainder); dock/drawer size tokens.
 
+## Phase 2C — rendered rig (draft; waits for the user's OK on spec.md "Phase 2C" + constitution change 6)
+Supersedes 2.3–2.9 art (not their logic). Renders on the user's PC with `blender` (pacman); the implementer runs
+Blender headless only, never edits `.blend` files by hand (there are none: scripts build the scene each run).
+Slice first: 2C.0–2C.8 end in a **user review gate**; nothing after 2C.8 starts before the user approves the S-shots.
+
+### Slice (room + amp head + cab + one stompbox + one knob type + cables)
+- [ ] 2C.0 **Constitution + docs** — `constitution.md` change 6 (spec.md wording), `CLAUDE.md` layout line
+  (`tools/render/`, `app/assets/render/`, Blender = dev tool), project `mapa/` note. Done: diff matches spec wording.
+- [ ] 2C.1 **Palette + manifest validation (pure)** — `tools/render/palette.py` (ast read of `app/theme.py`, hex→linear,
+  `validate_manifest`). Done: `tests/test_render.py` (stdlib only): palette has every `theme.chassis` family and block
+  colour; hex→linear of `#808080` ≈ 0.216; manifest validator rejects `../x.png`, `a/b.png`, missing keys.
+- [ ] 2C.2 **Harness + materials** — `tools/render/rig.py` (args after `--`, device pick OPTIX>CUDA>CPU / `--cpu`, seed
+  200, AgX, samples, OIDN, crop-to-alpha, manifest merge sorted), `tools/render/materials.py` (all recipes in design.md).
+  Done: `blender -b -P tools/render/rig.py -- matsheet` writes a scratch sheet of spheres/tiles (not committed) and prints
+  `blender --version` + device + time; shown in the report.
+- [ ] 2C.3 **Room plate** — `rig.py plate`: room, pedalboard, empty rack case + stand, lights, camera solved to horizon
+  ≈ 302 su; `plate.jpg` 2400×780 + `cell_bg.jpg` + manifest `camera`, `lanes`, `cable_w`. Done: R0-plate shot; ≤ 700 KB;
+  render time logged in `notes.md`.
+- [ ] 2C.4 **Slice gear** — `tools/render/models.py` head, cabinet, stompbox, plugs; `rig.py slice` renders 34B's
+  families (AMP Silver Twin → `art_for` family, CAB Dark Twin family + speakers, DST Lazaro family) as in-place sprites
+  with shadow-catcher room, lit patches, frontal heroes, anchors; plugs straight/right-angle L/R. Done: sprites
+  composited over the plate in a scratch script line up (no halo, shadows meet the floor); files within budget.
+- [ ] 2C.5 **Knob type `pointer`** — `rig.py knob pointer`: cap/mark/light/shadow layers per needed cap colour, signed
+  alpha light layer. Done: S1-knob-sheet (5 angles) shows fixed highlight, turning pointer, no edge halo.
+- [ ] 2C.6 **Loader** — `app/art.py` `load_manifest`, `unit_key`; `gp200_app.py` context property `R`; `bridge.py`
+  unit dicts gain `key`; `theme.py` tokens `render_dir sel_pool cable_hi cable_shadow ghost_op` in `qml_tokens()`.
+  Done: tests (valid manifest, missing file → `{}`, path traversal rejected, key for each kind) in `tests/test_bridge.py`.
+- [ ] 2C.7 **Composition** — `Stage.qml` (plate image, selection light pool, no lift), new `RenderUnit.qml` (sprite, name
+  in perspective, knob marks, lit patches, hit rects), `SceneUnit.qml` (RenderUnit when `R.units[key]`, else 2B
+  component), `Knob.qml` `sprite` mode, `faces/Hero.qml` (rendered hero + live knobs). Done: S1-slice and S1-closeup
+  shots; QML smoke test loads with an empty and with the slice manifest, 0 warnings.
+- [ ] 2C.8 **Cables v2** — `Wire.qml` (depth width, 3-stroke shading, lanes + rounded corners, patch drops, plug sprites,
+  boot ring state), `Stage.qml` z order from design.md. Done: S1-slice cables; I3-style 3 frames of a reorder;
+  **STOP: report S-shots + render times to the coordinator for the user's review (Decisions Q1–Q6).**
+
+### Rest (after the user's OK on the slice)
+- [ ] 2C.9 **All gear** — remaining head families, cab 3×3, rack case units MOD/DLY/RVB + `rack_glare.png`, PRE ×2, DST ×4,
+  NR, EQ + `fader_thumb.png`, treadles WAH/VOL × 9 frames; heroes for each. Done: M3-families contact sheet; budget met.
+- [ ] 2C.10 **Knob types** — `skirted`, `chicken`, `rack` (+ cap colours per family table). Done: knob sheet per type.
+- [ ] 2C.11 **Live parts on every kind** — `RenderUnit.qml`: rack display text under glare, EQ thumbs, treadle frame swap,
+  lit patches for every LED/jewel; EQ close-up fader bank uses the rendered thumb (`Fader.qml` sprite mode). Done:
+  B3-rig, B3-rig-alt, K3, L3, T3, J3 shots.
+- [ ] 2C.12 **Compact cells** — `ArtCell.qml`: `cell_bg.jpg` + RenderUnit at cell scale. Done: D3-compact; resize
+  1888 → 945 → 1888 clean.
+- [ ] 2C.13 **Remove vector gear** — delete the 2B drawings no longer reached (`AmpHead.qml`, `Cabinet.qml`, `RackUnit.qml`,
+  `Treadle.qml`, `EqBox.qml`, Shapes parts of `Stompbox.qml`/`Body.qml` if unused, unused textures in
+  `app/assets/textures/` and their generator code/tests); grep proves no references. Done: tests green, B3/D3 retaken
+  unchanged.
+- [ ] 2C.14 **Audit** — determinism (two `all` runs: manifest identical, images mean |Δ| ≤ 1/255), size budget, originality
+  checklist from design.md ticked in `review.md`, O3-states, B3-medium; `GP200_FX=0` identical; real-pedal smoke on a
+  free slot ≥ 34A (edits on every kind audible, nothing new sent).
+
 ## Phase 3 — alive
 - [ ] 3.1 **DSP** — `app/audio.py` `level_db`, `pitch_hz`, `note_of`; tests on synthetic sines (E2, A2,
   E4 within ±1 cent at 48 kHz), silence → None/floor.

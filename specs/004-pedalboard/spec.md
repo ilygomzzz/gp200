@@ -108,7 +108,7 @@ Part A, quick touches (shots 1888×1016 and 1200 unless noted; fake pedal with r
   no empty band above them, value bubble still shown while turning; LED + footswitch at the bottom centre with
   "Encendido"/"Apagado"; effect picker is a dark nameplate pill (name 18 px + description), no Basic-style field.
 - **C2-arc.png**: one knob on each of the 11 block faces; the value arc and printed ticks are visible on all.
-Part B, rig scene (≥ 1100 px wide):
+Part B, rig scene (≥ 1100 px wide; its vector gear art is superseded by "Phase 2C — rendered rig" below, its logic stays):
 - **B2-rig.png** (34B realistic): the board plate is a stage — dark wall, rubber stage-mat floor, horizon ~58 %
   down, one top-left key light, contact shadows on the floor. Back line: amp head (tolex, panel, pilot jewel lit
   when ON) on a cabinet (grille cloth, speaker config from desc e.g. "4x12"); a rack case with MOD/DLY/RVB as 1U
@@ -190,3 +190,92 @@ logos/names/trade dress in art (catalog desc text with ® stays as text)."
 - Windows < 1100 px: **art cells**, no scene.
 - Constitution change 5 (generated colourless alpha textures + shadow/spotlight sprites) approved.
 - Skeleton loading bars are **static** (no pulse), respecting the ≤ 400 ms motion rule.
+
+---
+
+## Phase 2C — rendered rig (draft 2026-11-25, waiting for the user's OK)
+Supersedes the **vector gear art** of Part B (QtQuick.Shapes bodies, tiled alpha textures on gear, flat wall/mat, cubic
+cables). Kept from 2B: `bridge.py` model (`Board`, `unit_view`, `art_for` kinds/families), chain strip and all
+interactions, zone layout by kind, compact (< 1100 px) logic, close-up behaviour (picker, footswitch, knob input rules).
+
+### Problem
+User on the 2B scene (commit af44f0f), verbatim: "esta bien, pero se siente muy goofi, lienas con tengentes notorias y
+es como para niños chicos, quiero maaas real, y la uliminación, moqueta y todo, no se siente como estar en una sala,
+basate muuucho en amplitube". Then chose pre-rendered art made with Blender, AmpliTube's own approach: our own
+procedurally modelled gear and room rendered with Cycles, shown as images in QML; knobs and live parts as overlays.
+
+### Goal
+The board reads as a photo of a real rehearsal room: carpet, painted wall, warm practical light, real contact shadows,
+gear with tolex, grille cloth, brushed metal and chrome. Everything that changes (knob values, LEDs, displays, effect
+names, cables, selection) stays live in QML over the renders. Same app, same model, same behaviour.
+
+### Out of scope (2C)
+- Any AmpliTube asset, screenshot, model or texture; any downloaded model, HDRI, texture, photo or font for renders;
+  real brand logos, names, model numbers, script plates or trade-dress silhouettes (see design.md "Originality").
+- Qt Quick 3D or any runtime 3D; Blender as a runtime dependency (it is a dev tool; renders are committed).
+- Animated renders (only frame swaps: treadle rocker frames); camera moves; user-placed gear.
+- Changes to `bin/gp200`, `model.py`, `chat.py`, what is sent to the pedal.
+
+### Acceptance — vertical slice (gate: user approves S-shots before 2C.9+)
+Shots in `specs/004-pedalboard/shots/`, fake pedal with 34B's real values (`gp200 show 34B`: AMP Silver Twin Gain 45,
+CAB Dark Twin, DST Lazaro, NR Gate 1, EQ, RVB Tube Spring), offscreen grab as before.
+- **R0-plate.png** = `app/assets/render/plate.jpg` itself (2400×780): empty room, no gear except the pedalboard and the
+  empty rack case on its stand. Shows: charcoal low-pile carpet with visible fibre grain in the foreground and soft
+  falloff to the back; a painted back wall (dark slate, roller texture) with a band of fabric acoustic panels; a caged
+  warm bulb (practical) on the wall top-left lighting a warm pool; the floor/wall junction with a dark skirting board and
+  ambient occlusion; key light from top-left front, cool fill from the right, a rim light from behind. No pure-black
+  areas without detail; no visible tiling repetition; no text, logo or brand.
+- **S1-slice.png** (1888×1016, 34B open, AMP selected): plate scaled to the board; rendered amp head (34B family) on a
+  rendered cab (34B grille + speaker variant) and a rendered DST stompbox, each with baked contact shadows that touch
+  the carpet/cab top; their knobs show 34B's values (pointer angles match Gain 45 etc.); the head's pilot jewel and the
+  DST LED are lit (warm glow spills on the panel); effect names printed on the nameplates in perspective. Units not yet
+  rendered use the 2B vector component (mixed scene accepted only in the slice). Cables: black rubber, 3-tone shading,
+  rendered chrome plugs at the jacks, floor runs lie on the carpet (no loops in the air, no visible tangent swoops).
+- **S1-closeup.png** (close-up of AMP, mid-drag on Gain): frontal hero render of the head's control panel at ≥ 2× stage
+  detail; the knob being dragged rotates (cap turns, highlight stays fixed), value bubble "Gain 63" shown.
+- **S1-knob-sheet.png** (scratch): the slice knob type at 0, 25, 50, 75, 100 % on the stage and on the hero.
+User decision required after the S-shots: OK / changes (camera, light, carpet, palette) before the rest is rendered.
+
+### Acceptance — full 2C
+- **B3-rig.png** (1888×1016, 34B) and **B3-rig-alt.png** (a slot whose AMP/CAB/DST map to other families, e.g. a
+  British head + 4x12): every unit rendered (head, cab, rack case with MOD/DLY/RVB 1U units, PRE, DST, NR, EQ, WAH, VOL);
+  rack displays show live values in block colour behind a rendered glass glare; treadle rockers at the frame nearest the
+  value; OFF units: LED dark, no glow; ON units: lit LED patch.
+- **B3-medium.png** (1200 wide): same scene scaled; text rule from 2B (hidden below 12 px effective, tooltip instead).
+- **D3-compact.png** (945 wide): art cells in chain order, each a rendered unit sprite on a rendered carpet cell
+  background (no vector art).
+- **I3-reorder.png** (+3 frames): chain strip drag moves DLY before DST; cables re-route along the floor lanes, plugs
+  stay on jacks, nothing swoops.
+- **J3-amp.png, K3-rack.png, L3-eq.png, T3-treadle.png**: close-up heroes = frontal renders of the same models with live
+  knobs/faders/rocker frame; EQ fader thumbs are rendered sprites moved by QML.
+- **M3-families.png** (scratch contact sheet): every family × kind rendered; visibly distinct; originality checklist in
+  design.md ticked in `review.md`.
+- **O3-states.png** (4 crops): empty (plate + "Elige un slot para ver su cadena" on the wall), loading (default-family
+  sprites at 20 % as ghosts), busy (stage 0.6, input off), selection (light pool + chip; no outline drawn on the gear).
+Pipeline:
+- `blender -b -P tools/render/rig.py -- all` regenerates `app/assets/render/` from scratch with no network access and
+  no file outside the repo read (except Blender itself); re-running produces a byte-identical `manifest.json` and images
+  within mean |Δ| ≤ 1/255 per channel on the same device.
+- `app/assets/render/` total ≤ 12 MB; `plate.jpg` ≤ 700 KB; no single PNG > 600 KB.
+- Without `blender` installed the app and `python3 -m unittest discover tests` still work (renders are committed).
+Behaviour: every 2B interaction unchanged (click/toggle/double-click/context menu on units, chain-strip drag/keys/menu,
+Tab order, knob drag/wheel/keys on stage-hero-face knobs); hit areas come from manifest rects (clicking transparent
+sprite areas does not select); images load `asynchronous` (UI thread never blocks > 50 ms; first open of a slot shows
+the plate within 300 ms); `GP200_MOTION=0` instant; `GP200_FX=0` changes nothing in the stage (no MultiEffect used).
+Real pedal (free slot ≥ 34A): edits on every kind still audible; nothing new sent.
+
+### Constitution change 6 (needs user OK; applied in task 2C.0)
+Replace the **gear art** sentence in Look with:
+"Gear art = original renders: geometry and procedural materials authored in our own Blender scripts
+(`tools/render/`, shader nodes only: no downloaded models, HDRIs, textures, photos, fonts, logos or third-party art),
+rendered with Cycles and committed as PNG/JPEG + `manifest.json` in `app/assets/render/`; material base colours come from
+`theme.py` (read by the scripts, never duplicated as hex). QML composes the renders and draws only live parts (knob
+pointers, LEDs, display text, names, cables, selection light) from `theme` tokens. Blender is a dev tool, not a runtime
+dependency. No real brand logos/names/trade dress in art (catalog desc text with ® stays as text). Colourless alpha
+tiles from `tools/make_textures.py` remain allowed for QML-drawn surfaces."
+
+### Decisions (2C, user OK 2026-11-25)
+- Plan and constitution change 6 approved ("okay").
+- Q1–Q5: proposed defaults (frontal camera ~26° down, carpet floor, QML cables with rendered plugs, black cables with state on plug ring, no depth of field).
+- Q6: user approves the slice shots before the rest is rendered.
+- Blender 5.3.0 installed; OptiX and CUDA devices available (RTX 3060).

@@ -180,6 +180,7 @@ No art carries a real logo, brand name, model number or a copied shape (e.g. no 
 diamond grille cloth pattern, no script logos); nameplates show the Valeton catalog effect name.
 
 ## Rig scene (phase 2 part B) — design source for tasks 2.0–2.10
+> **Art superseded by "Phase 2C — rendered rig" (2026-11-25).** Zones, interactions, states and the chain strip stay.
 Decisions (spec.md 2026-11-25): units by kind + chain strip for order; rubber stage mat; < 1100 px = art cells;
 generated colourless alpha textures + sprites (constitution change 5). Part A (2.A1–2.A6) is unaffected.
 
@@ -459,3 +460,233 @@ ComboBox popups, ToolTips on `T.popup_bg` (opaque).
   `HeaderBar.qml`, `InlineBar.qml`, `ChatPane.qml`, `StatusPill.qml`; phase 2: `AmpHead.qml`,
   `Cabinet.qml`, `RackUnit.qml`, `Fader.qml`, `Treadle.qml`, `faces/` close-up faces per kind;
   phase 3: `Meter.qml`, `Tuner.qml`.
+
+---
+
+## Phase 2C — rendered rig (supersedes the vector gear art of "Rig scene" where noted)
+Still valid from 2B: zones by kind, stage units (su) 1600×520 scaled by `s`, the 12-px text rule, chain strip, stage
+interactions, states, close-up container/picker/footswitch, compact switch at 1100 px, `art_for` kinds and families.
+Superseded: per-kind QtQuick.Shapes drawings, `Tex` material tiles on gear, wall gradient + mat, spotlight-as-only-light,
+cubic cables, lift-on-select (a lifted sprite would tear its baked shadow).
+
+### Direction
+A real rehearsal room seen from the player's standing position: you look down at your pedalboard on the carpet and
+across to the amp stack and rack against the wall. Quiet, dark, warm: one caged bulb on the wall, a key light from
+the front-left, the gear catching it on edges. The memorable thing is the light on the gear; everything else (UI chrome,
+strip, close-up frame) stays as calm as it is now. Realism comes from real scale + perspective, not from decoration.
+
+### Pipeline (`tools/render/`, Blender ≥ 4.2, headless)
+```
+blender -b -P tools/render/rig.py -- all                 # everything
+blender -b -P tools/render/rig.py -- plate               # room plate only
+blender -b -P tools/render/rig.py -- unit AMP blackface  # one stage sprite (+ lit patch, hero)
+blender -b -P tools/render/rig.py -- knob pointer        # knob layers
+blender -b -P tools/render/rig.py -- slice               # the vertical slice set
+   [--cpu] [--samples N] [--out DIR]                     # default device: OPTIX > CUDA > CPU; out app/assets/render
+```
+| File | Role | bpy? |
+|---|---|---|
+| `rig.py` | CLI after `--`, scene setup (units = metres, colour management, camera, lights), job list, manifest merge/write | yes |
+| `materials.py` | procedural material library (below) | yes |
+| `models.py` | procedural gear builders per kind/family (bmesh + modifiers: bevel, solidify, array) | yes |
+| `palette.py` | reads `app/theme.py` with `ast` (module-level literal assignments: `chassis`, `block_colors`, `pilot`, `metal*`, `cable`…), hex → linear RGB; validates manifest dicts | **no** (stdlib, unit-tested) |
+- `theme.py` imports PyQt6, which Blender's Python lacks, hence `ast` parsing instead of import; hex stays only in theme.py.
+- Deterministic: `scene.cycles.seed = 200`, fixed samples, no time-based anything, sorted job order, manifest written with
+  `json.dumps(..., sort_keys=True, indent=1)` and floats rounded to 0.1 su. Noise patterns in materials use fixed
+  `W`/seed inputs. Re-renders on the same device: images within mean |Δ| ≤ 1/255 (GPU and denoiser are not bit-exact).
+- Render settings: Cycles, 256 spp plate / 128 spp sprites / 64 spp knob layers, adaptive sampling threshold 0.01,
+  OpenImageDenoise (albedo + normal passes), light paths max 8 (glossy 4, transmission 4), clamp indirect 10, filmic
+  view = **AgX, look "Medium High Contrast"**, exposure set once on the plate and shared. Tokens therefore are *paint
+  colours*; the rendered pixel differs (accepted; contrast of live text is checked on the render, not the token).
+- Expected time (estimates; RTX 3060 OptiX): plate ≈ 40–60 s; one stage sprite ≈ 5–10 s; one hero ≈ 10–20 s; knob type
+  ≈ 5 s; full `all` (≈ 90 renders) ≈ 15–20 min. CPU-only (12 threads) ≈ 6–8× longer (≈ 2 h for `all`, ≈ 10 min for the slice).
+- Output: `app/assets/render/` — `plate.jpg` (q 90), `cell_bg.jpg`, sprites `*.png` (8-bit RGBA, compression 15),
+  `manifest.json`. Budget ≤ 12 MB total (plate ≤ 700 KB, any PNG ≤ 600 KB); sprites are auto-cropped to their alpha bbox.
+- Resolution: one scale, **1.5 px per su** (plate 2400×780). The board is at most ~1500 px wide in a 1888 window and
+  ~1150 at the typical tile, so 1.5 covers 1×–1.3× displays with downscaling only; heroes are rendered at their own scale
+  (2 px per hero px at the max close-up size, `face_max_h` 344 → 688 px tall), not upscaled stage sprites.
+
+### Room (plate)
+Real scale, metres, origin = front edge of the pedalboard centre on the floor, +y into the room, +z up.
+```
+ side view                                     front view of the plate (2400 x 780 px = 1600 x 520 su)
+                 wall y=3.2                    +-------------------------------------------------------------+
+   cam (0,-1.1,1.55)    |  bulb (-1.4,3.15,2.0)| acoustic panels   [bulb]     ___ rack case                |
+     \  pitch 26° down  |  head  on cab        |   ####  ####   ####      [head ]  |    |   (wall plate)     |
+      \                 |  rack on stand       |                          [ cab ]  |rack|      o "Salida"  |
+       \  f 26 mm       |  (y 2.7)             |__skirting_____________ __[_____]__|____|_______________ ~y302|
+        \____board(y 0..0.42)___________|      |      carpet (fibre grain, AO under gear, warm pool)         |
+  floor z=0 (carpet)                           |  o==Guitarra     [ pedalboard: PRE DST NR EQ  WAH VOL ]     |
+                                               +-------------------------------------------------------------+
+```
+- **Camera**: perspective, 26 mm on 36 mm sensor (wide but not fisheye), location (0, −1.1, 1.55) m, pitch 26° below
+  horizontal, **no yaw, no roll** (frontal keeps hit rects, chain-strip mapping and overlays axis-aligned; depth comes from
+  the pitch). Aspect 1600:520. The script solves the shift_y so the horizon/skirting lands at y ≈ 302 su (2B horizon).
+  DoF off (Q5). Real scale through perspective makes floor pedals read ≈ 0.4× the head width, as in the room.
+- **Back wall** (y 3.2): painted plaster, dark slate (`theme.stage_wall` as base colour), roller texture = noise
+  (scale 40, detail 8) → bump 0.08 + roughness 0.75–0.9; a band of 4 fabric acoustic panels (0.6×0.6 m, 5 cm thick,
+  bevelled, fabric = fine weave voronoi + noise bump, desaturated petrol `stage_wall_hi`-adjacent colour) at z 1.4–2.0.
+  Skirting board 8 cm, satin dark paint. Left side wall at x −2.6 only to bounce light (out of frame).
+- **Floor**: low-pile carpet, charcoal (`stage_mat` base). Shader: base colour × (0.85..1.1 from noise scale 300, detail 2)
+  + fibre bump (white noise scale 2000 into Bump strength 0.25 + wave texture bands scale 120 at 3 % for the tufting rows)
+  + sheen 0.4 (Principled sheen weight; fibres catch grazing light) + roughness 0.95; a few large low-contrast wear
+  patches (noise scale 2, 4 %). No geometry hair (cost), the bump + sheen carry it at this distance.
+- **Pedalboard** (in the plate, fixed): 1.0×0.42 m, slanted 8° deck, deck covered in black hook-and-loop fabric (noise
+  bump fine), aluminium side rails (brushed anisotropic), rubber feet. Pedals sit on it in their zones.
+- **Rack case + stand** (in the plate, empty): 4U open frame, tolex sides, black steel rack rails with cage-nut holes;
+  the 1U units are sprites.
+- **Lights** (all procedural, no HDRI; world = flat dark grey 0.004 for minimal ambient):
+  | Light | Type | Where | Colour | Power (start) | Job |
+  |---|---|---|---|---|---|
+  | key | area 1.2×0.8 m, spread 60° | front-left above (−1.6, −0.4, 2.6) aimed at board/amp | 4300 K | 450 W | shape, edge highlights, shadows falling right-back |
+  | fill | area 3×2 m | right (2.4, 0.8, 1.6) | 6500 K | 60 W | lift shadows, never zero detail |
+  | rim | spot 35°, blend 0.6 | behind/above amp (0.6, 3.0, 2.8) aimed at camera-side | 3800 K | 250 W | separate amp/rack tops from the wall |
+  | practical | emissive caged bulb + point 0.03 m | wall top-left (−1.4, 3.15, 2.0) | 2400 K | 25 W | warm pool on the wall, warm cast on the carpet |
+  Contact shadows are real (Cycles); no faked blobs.
+- **Selection light** is not baked (see Composition).
+
+### Gear (sprites)
+Every unit is rendered **in place** (its zone, same camera, same lights) with the room set to **shadow catcher** +
+**holdout-free transparent film**: the sprite carries the unit plus its own shadows/AO on carpet, board and wall as
+black-with-alpha, so composited over `plate.jpg` it looks rendered together. Head sprites use a generic box top at cab
+height as an extra shadow catcher.
+Per job, besides the stage sprite: a **lit patch** (crop around each LED/jewel with the emitter on, incl. its glow on
+the panel; QML shows it when ON), the **hero** (frontal orthographic render of the panel/face, 2 px per hero px, knobs
+without pointer caps), and manifest anchors.
+
+| Kind (block) | Real size (m) | Families (from `art_for`, colours `theme.chassis[f]`) | Model notes | Variants |
+|---|---|---|---|---|
+| head (AMP) | 0.74×0.27×0.26 | brit_gold, tweed, blackface, copper, steel, graphite | tolex box (bevel 6 mm, corner protectors), front control panel inset with piping, handle, pilot jewel, 6 knob shafts, vent slots on top | 6 |
+| cabinet (CAB) | 1x: 0.52×0.47×0.28; 2x: 0.74×0.5×0.28; 4x: 0.76×0.76×0.36 | grille_wheat, grille_silver, grille_black | tolex box + corners + feet, grille frame with piping, cloth over faint speaker rings (visible through thin cloth only under key light) | 3 × 3 = 9 |
+| rack 1U (MOD/DLY/RVB) | 0.48×0.044 face | rack_dark | brushed faceplate, ears with screws, recessed display window (dark glass), 3 knob shafts, LED | 3 slots |
+| stompbox (PRE, DST) | 0.12×0.07×0.055 die-cast, bevel 4 mm | PRE: brushed, cream · DST: od_green, dist_orange, fuzz_violet (wedge top), metal_black | powder-coat (noise bump + clearcoat 0.3), nameplate recess, LED bezel, chrome footswitch, side jacks | 6 |
+| mini (NR) | 0.09×0.05×0.05 | gate_grey | same, 1 knob | 1 |
+| eq (EQ) | 0.12×0.09×0.055 | eq_white | 5 fader slots (sprite has slots only; thumbs are `fader_thumb.png`) | 1 |
+| treadle (WAH, VOL) | 0.10×0.26×0.08 | treadle_black | cast base, rubber-tread rocker (ribs geometry), chrome side strips, toe LED | 2 zones × **9 rocker frames** (heel 0 % → toe 100 %) |
+| plugs | — | metal/cable tokens | 1/4" straight + right-angle, chrome sleeve, black boot with a colour ring slot | 2 shapes × L/R |
+Cab speaker variant replaces the 2B cone circles: count changes the **cabinet size**, the way real 1x12/2x12/4x12 differ.
+The head's `y` is offset by the cab top (manifest `cab.top`), perspective error of the shift is < 1 px at 1.5 px/su.
+
+Materials (`materials.py`, all node-based, parameters from palette):
+| Material | Recipe |
+|---|---|
+| tolex | base = family body; Voronoi (scale 900, smooth F1) + noise → bump 0.35 (pebble); roughness 0.55–0.7 by noise; slight sheen |
+| grille cloth | base = family face; two wave textures (x/y, 260 threads/m) multiplied in alternating checker = over/under weave → bump 0.4 + colour ±6 %; alpha 0.92 so speaker rings ghost through |
+| brushed aluminium | metallic 1, roughness 0.28, anisotropic 0.8 along x, noise stretched 1:200 on x → roughness ±0.06 |
+| chrome | metallic 1, roughness 0.06, faint fingerprint noise on roughness ±0.03 |
+| powder coat | base = family body, clearcoat 0.3, noise scale 3000 bump 0.08 |
+| painted panel (amp faces) | base = family face; gold/copper families metallic 0.6 roughness 0.35 (anodised look); others satin 0.45 |
+| rubber | black 0.02, roughness 0.8, ribs as geometry |
+| knob plastic | base = family knob, roughness 0.3, clearcoat 0.5; knurl as geometry (array) |
+| display glass | black glass IOR 1.5 roughness 0.05 over a near-black emissive 0 backing |
+| carpet / wall / hook-and-loop / skirting | as in Room |
+Printing: nameplates are blank recesses in renders; the effect name is QML text (live, localised to the catalog name).
+**No baked text at all** (Blender text needs a font file; none is used): knob scales are tick marks (geometry), jack
+labels are omitted.
+
+### Knobs — single rotated sprite + fixed light layer (chosen)
+- Filmstrip (64–128 frames) was rejected: × 4 types × ~6 cap colours × 2 views ≈ 3,000 frames, 20+ MB, and still
+  quantised. A knob *turns about its own axis*; seen frontally that is exactly a 2D rotation, so render once and rotate.
+- Per knob type × colour, frontal orthographic, 256×256 px, 3 layers:
+  `*_cap.png` (the turning part: cap top, pointer/line/chicken-head, knurl, lit by a symmetric overhead dome so its
+  shading has no direction → rotation-invariant), `*_light.png` (static: the key-light highlight + shade of the round
+  body, encoded as signed alpha like `make_textures.py`: white where brighter than dome-lit, black where darker),
+  `*_shadow.png` (static: soft drop shadow on the panel).
+- Hero/face: `shadow` → `cap` with `rotation` → `light` (QML `Item` stack, `Image`s, no effects).
+- Stage (3/4): the unit sprite already contains the knob bodies, shaded in scene; QML overlays only `*_mark.png` (the
+  pointer/line, alpha) rotated then squashed by the manifest `sy` (= cos of the view angle to that panel, computed by
+  the script). Error of ignoring perspective inside a 20-px knob < 0.5 px.
+- Known limit: a chicken-head's raised pointer keeps a fixed-direction highlight in the light layer (looks right for
+  ±150°, slight mismatch near extremes); filmstrip fallback for that one type if the slice shows it.
+- Types: `pointer` (pedal: black knurled cap, cream line — **slice**), `skirted` (amp, skirt with tick ring printed on
+  the panel instead of the skirt), `chicken` (amp: brit_gold, tweed; **not** copper, see Originality), `rack`
+  (aluminium cap, dot). Family → type + cap colour table lives in `rig.py` and is echoed into the manifest (`knob`).
+  Angle range −150° … +150°.
+
+### Manifest (`app/assets/render/manifest.json`, su unless noted)
+```json
+{"version": 1, "px_per_su": 1.5, "stage": [1600, 520], "plate": "plate.jpg", "cell_bg": "cell_bg.jpg",
+ "camera": {"horizon": 302},
+ "lanes": {"board_back": 352, "carpet": 330, "front": 505},
+ "cable_w": [[300, 3.5], [505, 7.0]],
+ "units": {
+  "AMP/blackface": {"img": "amp_blackface.png", "rect": [355, 10, 345, 112],
+     "in": [380, 96], "out": [690, 92], "switch": null, "name": [470, 52, 160, 18, 0.93],
+     "knobs": [{"x": 402, "y": 62, "r": 9, "sy": 0.93, "type": "skirted_silver"}],
+     "leds": [{"rect": [660, 54, 18, 18], "lit": "amp_blackface_jewel.png"}],
+     "hero": {"img": "hero_amp_blackface.png", "size": [1400, 300],
+              "knobs": [{"x": 120, "y": 160, "r": 34, "type": "skirted_silver"}], "leds": [...], "name": [...]}},
+  "CAB/grille_silver/2": {"img": "...", "rect": [...], "top": 122, "in": [...], ...},
+  "WAH/treadle_black": {"frames": ["wah_0.png", "...", "wah_8.png"], "rect": [...], ...},
+  "rack/DLY": {"img": "...", "display": [970, 186, 96, 28], "glare": "rack_glare.png", ...}},
+ "knob_types": {"pointer_black": {"cap": "k_pointer_black_cap.png", "mark": "k_pointer_black_mark.png",
+                "light": "k_pointer_light.png", "shadow": "k_shadow.png", "a0": -150, "a1": 150}},
+ "plugs": {"straight_l": {"img": "plug_s_l.png", "tip": [0, 0], "exit": [24, 4], "ring": [10, 0, 4, 8]}}}
+```
+`name` = [x, y, w, h, sy] nameplate rect for the live effect name. All image paths are bare file names; the loader
+rejects anything with a separator or `..` (trust boundary).
+
+### Composition in QML
+- `Stage.qml`: `Image { source: plate; anchors.fill; asynchronous: true; smooth: true; mipmap: true }` replaces wall,
+  mat, horizon, rack-case and pedalboard drawings. Empty-state text stays (real px, on the wall).
+- `SceneUnit.qml` loads `RenderUnit.qml` when `R.units[key]` exists (key = `KIND/family[/speakers]`, rack = `rack/BLOCK`),
+  else the 2B component (slice only; removed in 2C.13). `RenderUnit` = sprite `Image` at `rect` (relative to the zone)
+  + `name` text (catalog effect name, `T.font` DemiBold, family `ink`, `transform: Scale{yScale: sy}`, hidden by the
+  12-px rule) + knob marks (rotation = −150 + 300·value) + lit patches (`visible: on`, opacity `Behavior` dur_s) +
+  rack display text (mono, block colour, under `glare`) + EQ thumbs (`fader_thumb.png` at band value along the slot) +
+  treadle frame (`frames[round(v·8)]`).
+- Hit test: `MouseArea` on the manifest body `rect` (not the sprite bbox, which includes baked shadows; manifest
+  stores both: `rect` body, `img_rect` sprite) + the `switch` rect (footswitch/toe) for toggling. No alpha masks.
+- **Selection** (no outline, no lift): a soft warm light pool — existing `spot.png` (white, 0.16) placed on the wall
+  behind back-line units / on the carpet under floor units, z between plate and sprites — plus the chain chip state.
+  LEDs show on/off only. Focus ring stays on the chip.
+- **Ghost / loading**: default-family sprite of the zone at 20 % opacity, no knob marks, no patches.
+- **Busy**: stage opacity 0.6 (2B). **Error/dirty**: unchanged.
+- **Hero** (`faces/Hero.qml`): frontal `hero.img` scaled to fit (≤ `face_max_h`), with real `Knob` instances at
+  `hero.knobs` (Knob.qml gains `sprite: "<type>"`: draws shadow/cap/light instead of Shapes; input logic, popup, keys,
+  menu unchanged; arc + ticks hidden in sprite mode). The knob row of the face stays for params beyond the model's
+  knobs (all params reachable), drawn with the `rack` knob type.
+- Compact cells (`ArtCell.qml`): `cell_bg.jpg` (carpet + falloff, 184×288 px) + the unit's stage sprite scaled to fit,
+  bottom-aligned (shadow sits on the cell's floor); live LED patch + mark overlays use the same `RenderUnit` at cell scale.
+
+### Cables (QML, `Wire.qml` rewritten; fixes "tangentes notorias")
+- Black rubber cables (`T.cable`) always; ON/OFF of the source block shown on the **plug boot ring** (block colour when
+  ON, `led_off` when OFF) + the unit LED (colour never alone). Phase 3 glow becomes a faint ring/cable sheen, not paint.
+- Width from depth: `w = lerp(cable_w)` by y (3.5 su at the back line, 7 su at the front).
+- Shading: 3 strokes on the same path: shadow (black 35 %, w+3, offset (+2, +3), only on floor segments), body
+  (`cable`, w, round caps), highlight (white 16 %, 0.3 w, offset −0.25 w towards the key light). Joins round.
+- Routing (no free-air swoops; real cables lie down):
+  - **Adjacent on the board** (patch): plug → short cubic dropping ≤ 18 su below both jacks, control points at ⅓ and ⅔ of
+    dx (no horizontal tangent overshoot), right-angle plugs.
+  - **Board ↔ back line / Guitarra / Salida**: polyline jack → down onto its lane (`board_back` behind the pedals,
+    `carpet` along the floor, `front` for the guitar lead) → along the lane → up to the target jack; corners rounded
+    with radius 16 su (quadratic). Segments behind the board are partly hidden by floor sprites (z order: plate, cables
+    on carpet, back-line sprites, board cables, floor sprites, plugs).
+  - **AMP → CAB**: short speaker lead from head back to cab back (mostly hidden), as 2B.
+- Plugs: rendered sprites at both ends, anchored by `tip` on the jack point, rotated for L/R; boot ring overlay.
+- Reorder: links recompute; cable layer opacity dip as 2B (≤ `dur_m`).
+
+### Originality (checked in 2C.14, listed in review.md)
+All gear invented from generic construction (box, tolex, panel, knobs). Forbidden, named explicitly: AmpliTube assets,
+screenshots, renders or their room/gear compositions; any brand logo, name, model number, script plate, badge shape;
+trade-dress combinations: Marshall-style gold panel **with** white piping + script plate + "basketweave" cloth (our
+`brit_gold` keeps the gold panel only, plain wheat cloth, no piping in white); Vox-style copper panel **with**
+chicken-heads + diamond grille (our `copper`: pointer knobs, plain cloth); Mesa-style diamond-plate front (our `steel`:
+plain brushed plate with perforated vents); Fender tweed lacquered **with** pointer "chicken" knobs on a top-mounted
+chrome panel layout (our `tweed`: front panel, skirted knobs); round "fuzz face" pedals, TS-style green box with oval
+LED window, Big-Muff shape, Rat shape, Cry-Baby treadle outline (our treadle: flat cast base, no shroud/arch).
+
+### Tokens (theme.py additions; existing unchanged)
+`render_dir` (path, like `tex_dir`), `sel_pool 0.16`, `cable_hi 0x29ffffff` (white 16 %), `cable_shadow 0x59000000`,
+`ghost_op 0.2`. Light colours/powers and camera live in `rig.py` constants (render parameters, not UI tokens).
+`stage_mat`/`stage_wall`/`stage_wall_hi` become render base colours (carpet, wall, panels) and keep their names.
+
+### Model / view split
+No model change. `app/art.py` gains pure `load_manifest(path) -> dict` (validates version, bare file names, existing
+files, numeric rects; returns `{}` on missing/invalid with a logged reason) and `unit_key(kind, family, speakers, block)`;
+both unit-tested. `gp200_app.py` loads it once at start and exposes context property `R` (plain dict → QVariantMap).
+`bridge.py` unit dicts gain `key` (from `unit_key`). No worker needed (file read once, small); images load
+asynchronously in QML. Renders are produced offline by Blender, never at runtime.
+
+### Copy (Spanish, new)
+None new on screen. Tooltips unchanged. Accessible names unchanged.
