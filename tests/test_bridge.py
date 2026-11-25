@@ -24,6 +24,23 @@ if bridge:
 
 
 @unittest.skipIf(bridge is None, "PyQt6 not installed")
+class RackArtTests(unittest.TestCase):
+    def test_rack_display(self):
+        self.assertEqual(bridge.rack_display("DLY", [("Feedback", 20), ("Time", 500), ("Mix", 30)]),
+                         (["500 ms", "Mix 30"], ["500 ms", "Mix 30"]))
+        self.assertEqual(bridge.rack_display("AMP", [("Gain", 5)]), (["Gain 5"], ["Gain 5"]))
+        self.assertEqual(bridge.rack_display("DLY", []), ([], []))
+
+    def test_unit_view_art_fields(self):
+        v = bridge.unit_view(preset(), "DLY")
+        self.assertEqual((v["kind"], v["family"]), ("rack", "rack_dark"))
+        self.assertEqual(len(v["display"]), len(v["displayShort"]))
+        self.assertLessEqual(len(v["knobs"]), 8)
+        self.assertEqual(len(v["knobs"]), len(v["labels"]))
+        self.assertEqual(bridge.unit_view(preset(), "CAB")["kind"], "cabinet")
+
+
+@unittest.skipIf(bridge is None, "PyQt6 not installed")
 class BoardTests(unittest.TestCase):
     def setUp(self):
         QCoreApplication.instance() or QCoreApplication([])

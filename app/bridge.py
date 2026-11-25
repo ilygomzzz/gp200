@@ -3,6 +3,7 @@ import copy
 
 from PyQt6.QtCore import QObject, QVariant, pyqtProperty, pyqtSignal, pyqtSlot
 
+from art import art_for
 from chat import system_prompt
 from model import effects_for, free_slots, g, slot_matches, snap_label
 
@@ -18,16 +19,41 @@ def catalog(block, effect):
         return None
 
 
+def _fmt(v):
+    return str(int(v)) if float(v) == int(v) else f"{v:.1f}"
+
+
+def rack_display(block, params):
+    """The 2 main values a rack unit shows (`params` = [(name, value)] of knob params) -> (full, short):
+    ["500 ms", "Mix 35"] and ["500", "35"] (the stage display is small)."""
+    want = {"DLY": ("time", "mix"), "RVB": ("decay", "mix"), "MOD": ("rate", "depth")}.get(block, ())
+    out = []
+    for w in want:
+        hit = next(((n, v) for n, v in params if w in n.lower() and (n, v) not in out), None)
+        if hit:
+            out.append(hit)
+    out = (out + [p for p in params if p not in out])[:2]
+    return ([f"{_fmt(v)} ms" if "time" in n.lower() else f"{n.strip()} {_fmt(v)}" for n, v in out],
+            [f"{_fmt(v)} ms" if "time" in n.lower() else f"{n.strip()} {_fmt(v)}" for n, v in out])
+
+
 def unit_view(preset, block):
-    """What a board unit shows: effect name, on, desc and `mini` = normalised (0..1) values of its first 3 knob params."""
+    """What a board unit shows: effect name, on, desc, art (kind/family/speakers), `mini` = normalised (0..1) values of
+    its first 3 knob params, `knobs`/`labels` = up to 8, `display` = the rack's 2 values."""
     blk = preset["blocks"][block]
     info = catalog(block, blk["effect"])
-    mini = []
+    mini, knobs, labels, named = [], [], [], []
     for p in (info or {"params": []})["params"]:
-        if p["type"] == "knob" and len(mini) < 3 and p["name"] in blk["params"]:
+        if p["type"] == "knob" and len(knobs) < 8:
+            v = blk["params"].get(p["name"], p["default"])
             span = (p["max"] - p["min"]) or 1
-            mini.append(max(0.0, min(1.0, (blk["params"][p["name"]] - p["min"]) / span)))
-    return {"effect": blk["effect"], "on": bool(blk["on"]), "desc": (info or {}).get("desc", ""), "mini": mini}
+            knobs.append(max(0.0, min(1.0, (v - p["min"]) / span)))
+            labels.append(p["name"].strip())
+            named.append((p["name"], v))
+    mini = knobs[:3]
+    desc = (info or {}).get("desc", "")
+    return {"effect": blk["effect"], "on": bool(blk["on"]), "desc": desc, "mini": mini, "knobs": knobs, "labels": labels,
+            "display": rack_display(block, named)[0], "displayShort": rack_display(block, named)[1], **art_for(block, blk["effect"], desc)}
 
 
 def chain_view(preset):

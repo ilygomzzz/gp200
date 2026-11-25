@@ -1,6 +1,7 @@
 """Design tokens (the only place with colour/size literals) + `qml_tokens()` for the QML view (specs 003 glass palette, 004 board)."""
 import os
 
+from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QColor
 
 font, icon_font, mono = "Noto Sans", "JetBrainsMono Nerd Font Propo", "JetBrainsMono Nerd Font Mono"
@@ -38,6 +39,34 @@ bevel_hi, shadow, scrim, pilot, ok = "#26ffffff", "#8c000000", "#66000000", "#e0
 ink_dark = "#14171a"  # print on mid-tone chassis
 meter_lo, meter_hi = "#5fb8d6", "#e0b050"
 font_value = 24
+# gear families (spec 004): body / face / ink (print on face) / knob; cabs: body = tolex, face = grille cloth, knob = piping
+chassis = {
+    "brushed": dict(body="#b9bec4", face="#d3d7db", ink="#14171a", knob="#2b2e34"),
+    "cream": dict(body="#d9ccae", face="#e8dfc7", ink="#14171a", knob="#2b2e34"),
+    "od_green": dict(body="#4f9a62", face="#68b27a", ink="#0f1a12", knob="#1b1d21"),
+    "dist_orange": dict(body="#d9793a", face="#ec9654", ink="#1c1109", knob="#1b1d21"),
+    "fuzz_violet": dict(body="#7d5cc2", face="#9a7fd8", ink="#ffffff", knob="#e8e4f0"),
+    "metal_black": dict(body="#25272b", face="#33363b", ink="#e9edf0", knob="#9aa3ab"),
+    "gate_grey": dict(body="#6f7b86", face="#8794a0", ink="#10151a", knob="#1b1d21"),
+    "eq_white": dict(body="#e6e8ea", face="#f4f5f6", ink="#14171a", knob="#2b2e34"),
+    "treadle_black": dict(body="#1f2124", face="#2b2e33", ink="#e9edf0", knob="#9aa3ab"),
+    "brit_gold": dict(body="#15161a", face="#c9a24a", ink="#1c1405", knob="#e8dcc0"),
+    "tweed": dict(body="#b59a62", face="#c9ccd0", ink="#1b1d21", knob="#2b2e34"),
+    "blackface": dict(body="#1a1b1f", face="#25272c", ink="#e9edf0", knob="#c3c9ce"),
+    "copper": dict(body="#2d2824", face="#b8743f", ink="#1e1006", knob="#14171a"),
+    "steel": dict(body="#17191c", face="#8c949b", ink="#101214", knob="#1b1d21"),
+    "graphite": dict(body="#202328", face="#3a3f46", ink="#e9edf0", knob="#c3c9ce"),
+    "grille_wheat": dict(body="#15161a", face="#c8b57e", ink="#14171a", knob="#e8dcc0"),
+    "grille_silver": dict(body="#1a1b1f", face="#a9afb5", ink="#14171a", knob="#c3c9ce"),
+    "grille_black": dict(body="#17181b", face="#1d1f23", ink="#e9edf0", knob="#6b737a"),
+    "rack_dark": dict(body="#202328", face="#2a2e34", ink="#e9edf0", knob="#c3c9ce", display="#0c1416"),
+}
+# rig scene (spec 004 part B); stage_w/stage_h/chip_h in stage units / px
+stage_wall, stage_wall_hi, stage_mat, stage_horizon = "#0c121a", "#3a3326", "#101214", 0.58  # hi = warm key light
+board_tolex, rail = "#1c1d20", "#8c949b"
+tex_tolex, tex_powder, tex_brushed, tex_grille, tex_tread, tex_mat, tex_shadow, tex_spot = 0.18, 0.07, 0.2, 0.45, 0.14, 0.14, 0.6, 0.3
+stage_w, stage_h, chip_h = 1600, 520, 32
+tex_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "textures")
 face_hi, face_lo, nameplate = "#1fffffff", "#2e000000", "#e614171a"  # enamel overlay + dark print band
 led_off, track_on_face, tick = "#73000000", "#4d14171a", "#9914171a"
 knob_face, face_max_h, track_code = 72, 344, 1.2  # 344 not 296: picker plate is 60 tall (name+desc) and the switch sits inside the face
@@ -86,7 +115,9 @@ def qml_tokens():
              "accent_text danger warn plate plate_border sel_fill sel_border field_bg field_border popup_bg block_colors glyphs s1 s2 s3 s4 "
              "s5 s6 r_plate r_card r_tile r_pill glass bg glass_alpha chassis_base cable jack metal metal_dark knob_cap knob_cap_hi "
              "knob_skirt knob_knurl ink_dark fx bevel_hi shadow scrim pilot ok meter_lo meter_hi font_value cell_w cell_h cell_gap knob_big knob_mini "
-             "w_wide w_medium motion face_hi face_lo nameplate led_off track_on_face tick knob_face face_max_h r_unit track_code").split()
+             "w_wide w_medium motion face_hi face_lo nameplate led_off track_on_face tick knob_face face_max_h r_unit track_code chassis stage_wall stage_wall_hi stage_mat stage_horizon board_tolex rail "
+             "tex_tolex tex_powder tex_brushed tex_grille tex_tread tex_mat tex_shadow tex_spot stage_w stage_h chip_h").split()
     out = {n: _qml(globals()[n]) for n in names}
+    out["tex_dir"] = QUrl.fromLocalFile(tex_dir).toString() + "/"
     out.update({k: v if motion else 0 for k, v in durations.items()})
     return out

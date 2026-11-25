@@ -5,6 +5,8 @@ Rectangle {
     signal chooseSlot()
     signal editEffect()
     property bool compactHint: false
+    property bool rig: false  // >= 1100 px: the stage scene; else art cells
+    readonly property real s: Math.max(0.3, (width - 32) / T.stage_w)
     readonly property bool open: board.open
     readonly property int count: open ? 13 : 2
     readonly property real gap1: 8  // one-row gap: jacks are 40 px cells, units 92
@@ -15,7 +17,7 @@ Rectangle {
     readonly property int n: oneRow ? count : Math.max(1, Math.floor((width - 32 + 12) / 104))
     readonly property int rows: Math.ceil(count / n)
     property int dropGap: -1
-    implicitHeight: oneRow ? (T.cell_h + 32) * sc : rows * T.cell_h + (rows - 1) * 16 + 32
+    implicitHeight: rig && open ? T.stage_h * s + T.chip_h + 8 + 40 : oneRow ? (T.cell_h + 32) * sc : rows * T.cell_h + (rows - 1) * 16 + 32
     radius: T.r_plate
     color: T.plate
     border.color: T.plate_border
@@ -37,6 +39,7 @@ Rectangle {
 
     Item {
         id: field
+        visible: !pb.rig && pb.open
         width: pb.width / pb.sc; height: pb.height / pb.sc
         scale: pb.sc; transformOrigin: Item.TopLeft
         Jack { x: pb.cx(0); y: pb.cy(0); label: "Guitarra" }
@@ -78,6 +81,8 @@ Rectangle {
             z: 20; x: pb.cx(pb.dropGap + 1) - pb.gapW / 2 - 1.5; y: pb.cy(pb.dropGap + 1) + 4
         }
     }
+    Stage { id: stage; visible: pb.rig && pb.open; x: 16; y: 16; s: pb.s; onEditEffect: pb.editEffect() }
+    ChainStrip { visible: pb.rig && pb.open; x: 16; y: 16 + T.stage_h * pb.s + 8; width: pb.width - 32; onEditEffect: pb.editEffect() }
     Column {
         visible: !pb.open
         anchors.centerIn: parent

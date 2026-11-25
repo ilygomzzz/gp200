@@ -7,15 +7,17 @@ Item {
     property bool on: false
     property bool ghost: false
     property var mini: []
+    property string family: ""  // art family (theme.chassis); "" = block-colour tint (compact fallback)
     readonly property color col: T.block_colors[block] || T.dim
     width: T.cell_w; height: 112
     Rectangle {
         id: body
         x: 8; y: 8; width: 76; height: 104; radius: T.r_unit
-        color: sb.ghost ? "transparent" : Qt.tint(T.chassis_base, Qt.alpha(sb.col, 0.6))
+        color: sb.ghost ? "transparent" : sb.family !== "" ? T.chassis[sb.family].body : Qt.tint(T.chassis_base, Qt.alpha(sb.col, 0.6))
         border.width: sb.ghost ? 1 : 0; border.color: T.ink_off
         layer.enabled: T.fx && !sb.ghost
         layer.effect: MultiEffect { shadowEnabled: true; shadowColor: T.shadow; shadowBlur: 0.4; shadowVerticalOffset: 3 }
+        Tex { visible: !sb.ghost; src: "powder"; op: T.tex_powder; inset: 3 }
         Rectangle {  // enamel: lit top, shaded bottom
             visible: !sb.ghost; anchors.fill: parent; radius: parent.radius
             gradient: Gradient { GradientStop { position: 0; color: T.face_hi } GradientStop { position: 0.5; color: "transparent" } GradientStop { position: 1; color: T.face_lo } }

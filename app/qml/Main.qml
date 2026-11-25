@@ -80,6 +80,7 @@ ApplicationWindow {
                             id: pb
                             Layout.fillWidth: true
                             compactHint: win.compact
+                            rig: win.slotsDocked
                             opacity: board.busy !== "" ? 0.5 : 1; enabled: board.busy === ""
                             onChooseSlot: slotDrawer.open()
                             onEditEffect: cu.focusPicker()

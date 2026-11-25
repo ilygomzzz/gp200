@@ -1,4 +1,4 @@
-APPROVED (round 2; round-1 CHANGES kept below)
+APPROVED (phase 1 round 2; part A CHANGES then fixed; part B round 2 APPROVED, see sections)
 
 # 004 Pedalboard, Phase 1 review (tasks 1.1-1.13; 1.14 real pedal out of scope, pedal not touched)
 
@@ -116,3 +116,77 @@ F2 (should fix, minor). At 945x800 with a 6-knob effect (`Bellman 59N`, `R2-comp
 - Not verified: real pedal, MultiEffect shadows (FX=0), motion (`GP200_MOTION=0` used), ticks on every block colour. My exercise scripts are in the session scratchpad only; extra shots: `C2-arc-turning.png`, `R2-picker-popup.png`, `R2-compact-945.png`, `R2-compact-945-tall.png`.
 
 Verdict part A: CHANGES (F1 required; F2 recommended). Everything else passes.
+
+# Phase 2 part B (2.0-2.9) — offscreen, fake pedal, GP200_FX=0, no MIDI
+
+CHANGES
+
+Tests: 40 OK. Own harness (QTest on the real window, 1888x1016, slot 34B): real mouse press/move/release on the chain strip, key presses, resizes 1888 -> 1000 -> 945 -> 1200 -> 1888. Extra shots: `RV2-strip-dragmid.png`, `RV2-sel-DLY.png`, `RV2-sel-CAB.png`, `RV2-compact-945.png`.
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| Tests pass | pass | 40 OK |
+| No hex outside theme.py | pass | grep over `app/qml`, `app/*.py` finds only `art.py` family-name strings, no colours |
+| make_textures deterministic, colourless, offline | pass | two regenerations identical; output equals committed `app/assets/textures`; numpy + QImage only, no network imports; PNG RGB is white/black + alpha by design |
+| Textures budget | pass | 8 PNG, 84 KB total (< 200 KB) |
+| Constitution change 5 wording | pass | `git diff constitution.md` text equals spec.md "Constitution change 5" |
+| No brand marks in art | pass | M2-families grid: generic shapes, family names are colour/material words; the only brand words are regexes in `art.py` matching catalog desc text (input, not drawn). Plate text "Tweedy" is the catalog effect name |
+| Perf | pass (not profiled) | Tex = one tiled Image; 12 `Shape` blocks in total (Knob 4 inside; Stage/Wire/Cable/Treadle 1 each); no Timer/Canvas/JS-per-frame in the new files |
+| Accessibility | pass | chain chips: `activeFocusOnTab`, Button role, name "PRE · effect · encendido"; arrows select, Ctrl+arrows move, Space toggles, Enter edits, context menu. Scene units (`SceneUnit.qml`) have a name but no tab stop. Tab order observed after reorder = new chain order (WAH, PRE, AMP, NR, CAB, DST, EQ ...) |
+| Chain reorder with real mouse | pass with warning | drag DST over 4 slots: order PRE WAH DST AMP NR CAB EQ ... -> PRE WAH AMP NR CAB DST EQ ...; Ctrl+Right also reorders; click chip selects; scene order unchanged as designed. See F1 |
+| Selection sync stage/strip/close-up | pass | board.select drives chip ring, close-up face + hero (DLY, CAB shots); chip click -> close-up. Stage click not driven by my harness (code path shared via board.select) |
+| Cables in chain order, behind back line | pass (visual) | B2-rig: cables z 7 over deck/floor, below back-line z 7.5/8 units; no cable crosses cab/rack faces |
+| Compact <1100 art cells, resize | pass | 945 and 1000 show art cells in chain order with wrap cable; 1200 shows scene; 1888 -> 945 -> 1888 restores; 0 warnings from resizing |
+| Close-up faces (2.9) | pass | `RV2-sel-DLY` rack hero, `RV2-sel-CAB` cabinet hero, J2 amp hero, L2 faders with frequency labels |
+| B2 selection: spotlight + 4 px lift | weak | selected unit lifts a few px (DLY, CAB) but the spotlight is barely visible in `RV2-sel-*`; the only clear indicator is the chip ring (see S1) |
+| K2 shot content | fail | see F2 |
+
+## Failures
+
+F1 (should fix). Every real chain-strip reorder emits a QML warning: `ChainStrip.qml:94: ReferenceError: cs is not defined` (the `onReleased` line `cs.dropGap = -1` runs after `board.moveTo(...)` rebuilt the Repeater and destroyed the delegate/context). Expected: reset `cs.dropGap` before calling `board.moveTo`, or via a local captured first. Order and send are correct; only the warning (and a stale dropGap if the delegate survives) is at stake. The implementer's board.moveTo-only check could not see it.
+
+F2 (shots must be retaken). `B2-rig.png`, `B2-medium`, `K2-rack.png` are stale or unrealistic: B2/K2 lack the close-up hero that J2 and my fresh grabs show (so they predate 2.9), and K2 shows the rack display "0 ms | 0" while the spec requires "500 ms · Mix 35" (fake pedal values are all 0; spec says realistic, e.g. Gain 55). Because the fixture is zero everywhere, the knob positions, EQ fader positions, treadle angle and display values were never shown with non-trivial data. Retake B2, K2, L2 with realistic values (Delay Time 500, Mix 35, non-zero EQ).
+
+F3 (minor, bug). `Cabinet.qml:28` prints `c.sp + "x12"` always, so a catalog cab "1x6" prints "1x12" (see `RV2-sel-CAB.png`). Expected: the print follows the catalog desc, or no "x12" claim. Also the print touches the cab's bottom-right piping.
+
+## Deviations in notes.md
+
+| Deviation | Verdict |
+|---|---|
+| tweed/blackface rule split | accept (needed: "Tweed Deluxe" vs blackface Fender models) |
+| NR = scaled Stompbox | accept (visible in B2, reads as a small gate pedal) |
+| fuzz wedge top omitted | accept; fuzz_violet in M2 is distinct by colour only, fine |
+| texture insets approximate rounded corners | accept; no visible bleed in shots |
+| M2 grid draws through ArtCell at 2.2x, not the stage | accept for distinctness/seams; it does not prove the stage path, but B2 covers that |
+| 2.10 contrast of ink per family not audited; "Tweedy" low contrast on amp plate | not accepted as done: the plate text is hard to read in J2/B2 and collides with the first knob. Please fix or record the ratio (suggestion below) |
+| GP200_FX=0 shots; MultiEffect not checked in real window | accept for this round, remains open for the user's real-desktop check |
+
+## Suggestions
+- S1: make the stage selection clearer (a brighter spotlight or a thin accent underline on the floor) since the chip ring is the only strong cue.
+- S2: amp head name text on the silver plate: use a dark ink and place it away from the knob row.
+- S3: scene units at <1400 px: label text under 12 px is hidden as designed, fine.
+
+Not checked: real window MultiEffect, real pedal (2.10), stage mouse click on a unit (tested only through board.select), performance numbers.
+
+Verdict part B: CHANGES (F1 and F2 required, F3 minor).
+
+## Phase 2 part B — round 2
+
+APPROVED for part B (2.0-2.9). 2.10 real-pedal smoke and the real-window MultiEffect check stay with the user.
+
+| Item | Result | Evidence |
+|---|---|---|
+| Tests | pass | 41 OK |
+| F1 dropGap/cs warning | pass | real QTest press/move/release on the strip: order PRE WAH DST AMP ... -> PRE WAH AMP NR CAB DST ..., 0 QML warnings; `ChainStrip.qml:93-94` reads and resets `dropGap` before `moveTo` |
+| F2 shots | pass | `J2-amp.png` (hero head, Gain 55/Tone 40/Volume 70, arcs matching), `B2-rig`, `B2-medium`, `K2-rack` now show realistic values; rack displays "Detune 5 · Wet 40", "500 ms · Mix 35", "Decay 70 · Mix 35"; lit LEDs and block-coloured chips visible |
+| F3 cab label | pass | stage cab prints "1x6" for the "1x6" Supro desc (`art.py:32` `cone`, `Cabinet.qml:29`) |
+| Selection cue | pass | `J2-amp`: selected head has a light rim and sits clearly above the cab; chip ring as before |
+| D2-compact (945) | pass | art cells in chain order, wrap cable through the gutter, selected cell (Tweedy) framed, close-up below; no clipping |
+| B2-medium (1200) | pass with note | scene scaled, labels hidden, chain strip fits; note below |
+
+Notes (not blocking):
+- At 1200 the amp head's top edge touches/clips the stage top (`B2-medium.png`, head at y~148 equals the stage top); at 1888 there is a margin. Suggestion: add a few px of top margin in the stage layout for the head when selected (8 su lift).
+- D2-compact: an amp head or rack drawn as a small flat shape inside a tall cell leaves empty cell space; cosmetic.
+- Amp nameplate contrast is now asserted >= 4.5 in tests (copper 4.95 per the coordinator; not independently re-computed).
+
+Not checked: real window/MultiEffect, real pedal, mouse click on a stage unit (only through `board.select`), performance numbers.

@@ -44,7 +44,8 @@ FocusScope {
     }
     Rectangle { anchors.fill: parent; radius: T.r_unit; color: area.containsMouse && !u.dragging ? T.sel_fill : "transparent"
         border.width: u.selected || u.activeFocus ? 2 : 0; border.color: T.accent; opacity: u.selected ? 1 : 0.6 }
-    Stompbox { block: u.block; ghost: u.ghost; on: u.on; mini: u.ghost ? [] : u.info.mini }
+    Stompbox { visible: u.ghost; block: u.block; ghost: true }
+    ArtCell { visible: !u.ghost; block: u.block; info: u.info; on: u.on }
     Text {
         visible: !u.ghost
         y: 116; x: 4; width: parent.width - 8; horizontalAlignment: Text.AlignHCenter

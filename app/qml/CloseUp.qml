@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "faces"
 
 Rectangle {
     id: cu
@@ -78,6 +79,14 @@ Rectangle {
                     text: board.dlyNote; color: T.warn; font.pixelSize: T.font_small; font.family: T.font
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                 }
+                RowLayout {  // hero art (wide windows only) beside the controls
+                spacing: T.s4
+                Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 148
+                Hero {
+                    block: board.selected; info: cu.unit === undefined ? null : cu.unit
+                    Layout.preferredWidth: 360; Layout.fillHeight: true
+                    visible: size !== undefined && cu.width >= 1000
+                }
                 Flickable {
                     id: fl
                     Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 148  // knob row never clipped
@@ -100,7 +109,14 @@ Rectangle {
                                 Item {
                                     required property var modelData
                                     width: 104; height: 148
+                                    Fader {  // EQ: a vertical fader bank, one per band
+                                        visible: board.selected === "EQ"; anchors.horizontalCenter: parent.horizontalCenter; height: 100; tint: cu.col
+                                        from: modelData.min; to: modelData.max; step: modelData.step; label: modelData.label; defaultValue: modelData.default
+                                        value: board && board.values[modelData.name] !== undefined ? board.values[modelData.name] : modelData.default
+                                        onMoved: function (v) { board.setParam(modelData.name, v) }
+                                    }
                                     Knob {
+                                        visible: board.selected !== "EQ"
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         dia: parent.parent.dia; onFace: true
                                         from: modelData.min; to: modelData.max; step: modelData.step
@@ -124,6 +140,7 @@ Rectangle {
                         }
                         ParamPills { id: pillsRow; tint: cu.col }
                     }
+                }
                 }
                 Item {  // LED + footswitch bottom-centre, like the real pedal
                     Layout.alignment: Qt.AlignHCenter

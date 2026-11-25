@@ -12,6 +12,9 @@ FocusScope {
     property color arcColor: T.accent
     property bool locked: false
     property bool mini: false
+    property color capHi: T.knob_cap_hi
+    property color capLo: T.knob_cap
+    property color pointer: T.text
     property bool onFace: false  // sits on a coloured face: dark track, white arc, printed ticks
     property string label: ""
     property real defaultValue: from
@@ -82,8 +85,8 @@ FocusScope {
             fillGradient: RadialGradient {
                 centerX: k.cx; centerY: k.cy; centerRadius: k.capR
                 focalX: k.cx - k.capR * 0.3; focalY: k.cy - k.capR * 0.3
-                GradientStop { position: 0; color: T.knob_cap_hi }
-                GradientStop { position: 1; color: T.knob_cap }
+                GradientStop { position: 0; color: k.capHi }
+                GradientStop { position: 1; color: k.capLo }
             }
             PathAngleArc { centerX: k.cx; centerY: k.cy; radiusX: k.capR; radiusY: k.capR; startAngle: 0; sweepAngle: 360 }
         }
@@ -92,7 +95,7 @@ FocusScope {
         x: k.cx; y: k.cy; width: 0; height: 0
         rotation: -135 + 270 * k.frac
         visible: !k.locked
-        Rectangle { x: -width / 2; y: -k.capR * 0.85; width: k.mini ? 1.5 : 2; height: k.capR * 0.55; radius: width / 2; color: T.text }
+        Rectangle { x: -width / 2; y: -k.capR * 0.85; width: k.mini ? 1.5 : 2; height: k.capR * 0.55; radius: width / 2; color: k.pointer }
     }
     Text {
         visible: k.locked
