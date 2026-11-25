@@ -54,7 +54,14 @@ Rectangle {
                     background: Rectangle {
                         radius: T.r_tile; color: T.nameplate
                         border.width: cb.activeFocus || cb.hovered ? 1 : 0; border.color: T.accent
-                        Text { x: 12; y: 6; text: T.glyphs[board.selected] || ""; font.family: T.icon_font; font.pixelSize: 22; color: cu.col }
+                        Image {
+                            readonly property var u: R.units && cu.unit ? R.units[cu.unit.key] : undefined
+                            visible: u !== undefined && u.thumb !== undefined
+                            x: 8; y: 6; width: 30; height: 30; sourceSize: Qt.size(60, 60); mipmap: true; asynchronous: true
+                            source: visible ? T.render_dir + u.thumb : ""
+                        }
+                        Text { x: 12; y: 6; text: T.glyphs[board.selected] || ""; font.family: T.icon_font; font.pixelSize: 22; color: cu.col
+                            visible: !(R.units && cu.unit && R.units[cu.unit.key] !== undefined && R.units[cu.unit.key].thumb !== undefined) }
                         Text {
                             x: 44; y: 38; width: parent.width - 56
                             text: cu.unit ? (cu.unit.desc !== "" ? cu.unit.desc : "Efecto sin catálogo: solo se puede cambiar por otro") : ""
@@ -70,7 +77,10 @@ Rectangle {
                         required property var modelData
                         required property int index
                         width: cb.width; height: 32
-                        contentItem: Text { text: modelData; color: T.text; font.pixelSize: T.font_body; font.family: T.font; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight }
+                        contentItem: Row { spacing: 8
+                          Image { readonly property var u: R.units ? R.units[board.effectKeys[index]] : undefined
+                            visible: u !== undefined && u.thumb !== undefined; source: visible ? T.render_dir + u.thumb : ""; width: 26; height: 26; fillMode: Image.PreserveAspectFit; smooth: true; anchors.verticalCenter: parent.verticalCenter }
+                          Text { height: parent.height; text: modelData; color: T.text; font.pixelSize: T.font_body; font.family: T.font; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight } }
                         background: Rectangle { color: cb.highlightedIndex === index ? T.sel_fill : "transparent" }
                     }
                 }
@@ -118,7 +128,7 @@ Rectangle {
                                     Knob {
                                         visible: board.selected !== "EQ"
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        dia: parent.parent.dia; onFace: true
+                                        dia: parent.parent.dia; onFace: true; sprite: "pointer_alu"
                                         from: modelData.min; to: modelData.max; step: modelData.step
                                         value: board && board.values[modelData.name] !== undefined ? board.values[modelData.name] : modelData.default
                                         label: modelData.label; defaultValue: modelData.default

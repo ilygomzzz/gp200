@@ -1,0 +1,2958 @@
+{
+ "cable_w": [
+  [
+   352.1,
+   2.0
+  ],
+  [
+   536.5,
+   3.7
+  ]
+ ],
+ "camera": {
+  "exposure": -1.5,
+  "f": 16.0,
+  "horizon": 318.5,
+  "pitch": 6.0
+ },
+ "cell_bg": "cell_bg.jpg",
+ "jacks": {
+  "in": [
+   70.0,
+   470.0
+  ],
+  "out": [
+   1500.0,
+   232.0
+  ]
+ },
+ "knob_types": {
+  "chicken_brit_gold": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_chicken_brit_gold_cap.png",
+   "light": "k_chicken_brit_gold_light.png",
+   "mark": "k_chicken_brit_gold_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "chicken_copper": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_chicken_copper_cap.png",
+   "light": "k_chicken_copper_light.png",
+   "mark": "k_chicken_copper_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "chicken_tweed": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_chicken_tweed_cap.png",
+   "light": "k_chicken_tweed_light.png",
+   "mark": "k_chicken_tweed_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_brushed": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_brushed_cap.png",
+   "light": "k_pointer_brushed_light.png",
+   "mark": "k_pointer_brushed_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_cream": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_cream_cap.png",
+   "light": "k_pointer_cream_light.png",
+   "mark": "k_pointer_cream_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_dist_orange": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_dist_orange_cap.png",
+   "light": "k_pointer_dist_orange_light.png",
+   "mark": "k_pointer_dist_orange_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_fuzz_violet": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_fuzz_violet_cap.png",
+   "light": "k_pointer_fuzz_violet_light.png",
+   "mark": "k_pointer_fuzz_violet_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_gate_grey": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_gate_grey_cap.png",
+   "light": "k_pointer_gate_grey_light.png",
+   "mark": "k_pointer_gate_grey_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_metal_black": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_metal_black_cap.png",
+   "light": "k_pointer_metal_black_light.png",
+   "mark": "k_pointer_metal_black_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "pointer_od_green": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_pointer_od_green_cap.png",
+   "light": "k_pointer_od_green_light.png",
+   "mark": "k_pointer_od_green_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "rack_rack_dark": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_rack_rack_dark_cap.png",
+   "light": "k_rack_rack_dark_light.png",
+   "mark": "k_rack_rack_dark_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "skirted_blackface": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_skirted_blackface_cap.png",
+   "light": "k_skirted_blackface_light.png",
+   "mark": "k_skirted_blackface_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "skirted_graphite": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_skirted_graphite_cap.png",
+   "light": "k_skirted_graphite_light.png",
+   "mark": "k_skirted_graphite_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  },
+  "skirted_steel": {
+   "a0": -150,
+   "a1": 150,
+   "cap": "k_skirted_steel_cap.png",
+   "light": "k_skirted_steel_light.png",
+   "mark": "k_skirted_steel_mark.png",
+   "px": 256,
+   "r_px": 79.4,
+   "shadow": "k_shadow.png"
+  }
+ },
+ "labels": {
+  "Guitarra": [
+   30,
+   492,
+   84,
+   24
+  ],
+  "Salida": [
+   1470,
+   296,
+   64,
+   24
+  ]
+ },
+ "lanes": {
+  "board_back": 392.1,
+  "carpet": 404.0,
+  "front": 543.5
+ },
+ "plate": "plate.jpg",
+ "plugs": {
+  "angle_l": {
+   "exit": [
+    15.2,
+    84.0
+   ],
+   "img": "plug_a_l.png",
+   "ring": [
+    9.2,
+    11.5,
+    12,
+    12
+   ],
+   "su_per_px": 0.3,
+   "tip": [
+    133.0,
+    17.5
+   ]
+  },
+  "angle_r": {
+   "exit": [
+    118.8,
+    84.0
+   ],
+   "img": "plug_a_r.png",
+   "ring": [
+    112.8,
+    11.5,
+    12,
+    12
+   ],
+   "su_per_px": 0.3,
+   "tip": [
+    1.0,
+    17.5
+   ]
+  },
+  "straight_l": {
+   "exit": [
+    0.0,
+    17.5
+   ],
+   "img": "plug_s_l.png",
+   "ring": [
+    -6.0,
+    11.5,
+    12,
+    12
+   ],
+   "su_per_px": 0.3,
+   "tip": [
+    133.0,
+    17.5
+   ]
+  },
+  "straight_r": {
+   "exit": [
+    134.0,
+    17.5
+   ],
+   "img": "plug_s_r.png",
+   "ring": [
+    128.0,
+    11.5,
+    12,
+    12
+   ],
+   "su_per_px": 0.3,
+   "tip": [
+    1.0,
+    17.5
+   ]
+  }
+ },
+ "px_per_su": 1.5,
+ "stage": [
+  1600,
+  520
+ ],
+ "units": {
+  "AMP/blackface": {
+   "hero": {
+    "img": "h_AMP_blackface.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_blackface",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_blackface_led.png",
+      "rect": [
+       13.6,
+       10.7,
+       319.3,
+       124.3
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_blackface.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_blackface",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_blackface_jewel.png",
+     "rect": [
+      572.7,
+      75.3,
+      251.3,
+      113.3
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_blackface.png"
+  },
+  "AMP/brit_gold": {
+   "hero": {
+    "img": "h_AMP_brit_gold.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_brit_gold",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_brit_gold_led.png",
+      "rect": [
+       13.6,
+       10.7,
+       319.3,
+       124.3
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_brit_gold.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_brit_gold",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_brit_gold_jewel.png",
+     "rect": [
+      572.7,
+      75.3,
+      251.3,
+      113.3
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_brit_gold.png"
+  },
+  "AMP/copper": {
+   "hero": {
+    "img": "h_AMP_copper.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_copper",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_copper_led.png",
+      "rect": [
+       13.6,
+       10.7,
+       319.3,
+       124.3
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_copper.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_copper",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_copper_jewel.png",
+     "rect": [
+      572.7,
+      75.3,
+      251.3,
+      113.3
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_copper.png"
+  },
+  "AMP/graphite": {
+   "hero": {
+    "img": "h_AMP_graphite.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_graphite",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_graphite_led.png",
+      "rect": [
+       13.6,
+       10.7,
+       319.3,
+       124.3
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_graphite.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_graphite",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_graphite_jewel.png",
+     "rect": [
+      572.7,
+      75.3,
+      251.3,
+      113.3
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_graphite.png"
+  },
+  "AMP/steel": {
+   "hero": {
+    "img": "h_AMP_steel.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "skirted_steel",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_steel_led.png",
+      "rect": [
+       13.6,
+       10.0,
+       319.3,
+       125.0
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_steel.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "skirted_steel",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_steel_jewel.png",
+     "rect": [
+      572.0,
+      74.0,
+      252.0,
+      104.0
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_steel.png"
+  },
+  "AMP/tweed": {
+   "hero": {
+    "img": "h_AMP_tweed.png",
+    "knobs": [
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 78.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 119.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 159.7,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 200.3,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 240.8,
+      "y": 84.1
+     },
+     {
+      "r": 6.9,
+      "sy": 1,
+      "type": "chicken_tweed",
+      "x": 281.3,
+      "y": 84.1
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_AMP_tweed_led.png",
+      "rect": [
+       7.1,
+       10.0,
+       325.7,
+       125.0
+      ]
+     }
+    ],
+    "name": [
+     29.3,
+     53.5,
+     135.0,
+     11.7
+    ],
+    "size": [
+     347.1,
+     158.6
+    ]
+   },
+   "img": "AMP_tweed.png",
+   "img_rect": [
+    556.7,
+    33.3,
+    343.3,
+    220.0
+   ],
+   "in": [
+    597.3,
+    133.2
+   ],
+   "knobs": [
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 628.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 658.3,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 688.7,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 719.0,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 749.4,
+     "y": 126.4
+    },
+    {
+     "r": 5.2,
+     "sy": 1.0,
+     "type": "chicken_tweed",
+     "x": 779.8,
+     "y": 126.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "AMP_tweed_jewel.png",
+     "rect": [
+      572.7,
+      78.7,
+      252.0,
+      99.3
+     ]
+    }
+   ],
+   "name": [
+    592.4,
+    103.5,
+    100.6,
+    10.1,
+    1.0
+   ],
+   "out": [
+    822.2,
+    157.2
+   ],
+   "rect": [
+    574.7,
+    60.5,
+    248.8,
+    111.0
+   ],
+   "thumb": "t_AMP_tweed.png"
+  },
+  "CAB/grille_black/1": {
+   "hero": {
+    "img": "h_CAB_grille_black_1.png",
+    "size": [
+     197.1,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_black_1.png",
+   "img_rect": [
+    575.3,
+    141.3,
+    295.3,
+    272.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_black_1.png"
+  },
+  "CAB/grille_black/2": {
+   "hero": {
+    "img": "h_CAB_grille_black_2.png",
+    "size": [
+     232.9,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_black_2.png",
+   "img_rect": [
+    554.7,
+    135.3,
+    347.3,
+    290.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_black_2.png"
+  },
+  "CAB/grille_black/4": {
+   "hero": {
+    "img": "h_CAB_grille_black_4.png",
+    "size": [
+     239.3,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_black_4.png",
+   "img_rect": [
+    551.3,
+    134.0,
+    356.0,
+    293.3
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_black_4.png"
+  },
+  "CAB/grille_silver/1": {
+   "hero": {
+    "img": "h_CAB_grille_silver_1.png",
+    "size": [
+     197.1,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_silver_1.png",
+   "img_rect": [
+    575.3,
+    141.3,
+    295.3,
+    272.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_silver_1.png"
+  },
+  "CAB/grille_silver/2": {
+   "hero": {
+    "img": "h_CAB_grille_silver_2.png",
+    "size": [
+     232.9,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_silver_2.png",
+   "img_rect": [
+    554.7,
+    135.3,
+    347.3,
+    290.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_silver_2.png"
+  },
+  "CAB/grille_silver/4": {
+   "hero": {
+    "img": "h_CAB_grille_silver_4.png",
+    "size": [
+     239.3,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_silver_4.png",
+   "img_rect": [
+    551.3,
+    134.0,
+    356.0,
+    293.3
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_silver_4.png"
+  },
+  "CAB/grille_wheat/1": {
+   "hero": {
+    "img": "h_CAB_grille_wheat_1.png",
+    "size": [
+     197.1,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_wheat_1.png",
+   "img_rect": [
+    575.3,
+    141.3,
+    295.3,
+    272.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_wheat_1.png"
+  },
+  "CAB/grille_wheat/2": {
+   "hero": {
+    "img": "h_CAB_grille_wheat_2.png",
+    "size": [
+     232.9,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_wheat_2.png",
+   "img_rect": [
+    554.7,
+    135.3,
+    347.3,
+    290.0
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_wheat_2.png"
+  },
+  "CAB/grille_wheat/4": {
+   "hero": {
+    "img": "h_CAB_grille_wheat_4.png",
+    "size": [
+     239.3,
+     164.3
+    ]
+   },
+   "img": "CAB_grille_wheat_4.png",
+   "img_rect": [
+    551.3,
+    134.0,
+    356.0,
+    293.3
+   ],
+   "in": [
+    800.0,
+    206.2
+   ],
+   "leds": [],
+   "rect": [
+    573.3,
+    179.1,
+    250.4,
+    173.0
+   ],
+   "thumb": "t_CAB_grille_wheat_4.png"
+  },
+  "DST/dist_orange": {
+   "hero": {
+    "img": "h_DST_dist_orange.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_dist_orange",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_dist_orange",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_dist_orange",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_DST_dist_orange_led.png",
+      "rect": [
+       40.0,
+       38.6,
+       87.1,
+       46.4
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "DST_dist_orange.png",
+   "img_rect": [
+    610.0,
+    342.7,
+    142.7,
+    163.3
+   ],
+   "in": [
+    644.9,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_dist_orange",
+     "x": 656.6,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_dist_orange",
+     "x": 673.1,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_dist_orange",
+     "x": 689.6,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "DST_dist_orange_led.png",
+     "rect": [
+      655.3,
+      378.0,
+      32.7,
+      28.7
+     ]
+    }
+   ],
+   "name": [
+    646.2,
+    395.4,
+    44.7,
+    8.9,
+    1.3
+   ],
+   "out": [
+    703.3,
+    399.7
+   ],
+   "rect": [
+    625.9,
+    372.9,
+    24.4,
+    87.8
+   ],
+   "switch": [
+    644.3,
+    392.8,
+    35.9,
+    29.6
+   ],
+   "thumb": "t_DST_dist_orange.png"
+  },
+  "DST/fuzz_violet": {
+   "hero": {
+    "img": "h_DST_fuzz_violet.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_fuzz_violet",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_fuzz_violet",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_fuzz_violet",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_DST_fuzz_violet_led.png",
+      "rect": [
+       43.6,
+       44.3,
+       82.9,
+       41.4
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "DST_fuzz_violet.png",
+   "img_rect": [
+    610.0,
+    342.7,
+    142.7,
+    163.3
+   ],
+   "in": [
+    644.9,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_fuzz_violet",
+     "x": 656.6,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_fuzz_violet",
+     "x": 673.1,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_fuzz_violet",
+     "x": 689.6,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "DST_fuzz_violet_led.png",
+     "rect": [
+      665.3,
+      381.3,
+      12.7,
+      35.3
+     ]
+    }
+   ],
+   "name": [
+    646.2,
+    395.4,
+    44.7,
+    8.9,
+    1.3
+   ],
+   "out": [
+    703.3,
+    399.7
+   ],
+   "rect": [
+    625.9,
+    372.9,
+    24.4,
+    87.8
+   ],
+   "switch": [
+    644.3,
+    392.8,
+    35.9,
+    29.6
+   ],
+   "thumb": "t_DST_fuzz_violet.png"
+  },
+  "DST/metal_black": {
+   "hero": {
+    "img": "h_DST_metal_black.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_metal_black",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_metal_black",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_metal_black",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_DST_metal_black_led.png",
+      "rect": [
+       45.7,
+       46.4,
+       80.7,
+       39.3
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "DST_metal_black.png",
+   "img_rect": [
+    610.0,
+    342.7,
+    142.7,
+    163.3
+   ],
+   "in": [
+    644.9,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_metal_black",
+     "x": 656.6,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_metal_black",
+     "x": 673.1,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_metal_black",
+     "x": 689.6,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "DST_metal_black_led.png",
+     "rect": [
+      656.0,
+      374.7,
+      25.3,
+      42.7
+     ]
+    }
+   ],
+   "name": [
+    646.2,
+    395.4,
+    44.7,
+    8.9,
+    1.3
+   ],
+   "out": [
+    703.3,
+    399.7
+   ],
+   "rect": [
+    625.9,
+    372.9,
+    24.4,
+    87.8
+   ],
+   "switch": [
+    644.3,
+    392.8,
+    35.9,
+    29.6
+   ],
+   "thumb": "t_DST_metal_black.png"
+  },
+  "DST/od_green": {
+   "hero": {
+    "img": "h_DST_od_green.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_od_green",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_od_green",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_od_green",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_DST_od_green_led.png",
+      "rect": [
+       42.9,
+       45.0,
+       83.6,
+       40.7
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "DST_od_green.png",
+   "img_rect": [
+    610.0,
+    342.7,
+    142.7,
+    163.3
+   ],
+   "in": [
+    644.9,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_od_green",
+     "x": 656.6,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_od_green",
+     "x": 673.1,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_od_green",
+     "x": 689.6,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "DST_od_green_led.png",
+     "rect": [
+      654.7,
+      376.7,
+      34.7,
+      40.0
+     ]
+    }
+   ],
+   "name": [
+    646.2,
+    395.4,
+    44.7,
+    8.9,
+    1.3
+   ],
+   "out": [
+    703.3,
+    399.7
+   ],
+   "rect": [
+    625.9,
+    372.9,
+    24.4,
+    87.8
+   ],
+   "switch": [
+    644.3,
+    392.8,
+    35.9,
+    29.6
+   ],
+   "thumb": "t_DST_od_green.png"
+  },
+  "EQ/eq_white": {
+   "faders": [
+    [
+     799.8,
+     380.4,
+     3.8,
+     20.6
+    ],
+    [
+     806.9,
+     380.4,
+     3.4,
+     20.6
+    ],
+    [
+     814.0,
+     380.4,
+     3.0,
+     20.6
+    ],
+    [
+     821.1,
+     380.4,
+     2.6,
+     20.6
+    ],
+    [
+     828.2,
+     380.4,
+     2.2,
+     20.6
+    ],
+    [
+     835.2,
+     380.4,
+     1.8,
+     20.6
+    ],
+    [
+     842.3,
+     380.4,
+     1.4,
+     20.6
+    ]
+   ],
+   "hero": {
+    "img": "h_EQ_eq_white.png",
+    "leds": [
+     {
+      "lit": "h_EQ_eq_white_led.png",
+      "rect": [
+       23.6,
+       36.4,
+       82.9,
+       155.7
+      ]
+     }
+    ],
+    "size": [
+     130.0,
+     215.7
+    ]
+   },
+   "img": "EQ_eq_white.png",
+   "img_rect": [
+    775.3,
+    352.7,
+    128.7,
+    153.3
+   ],
+   "in": [
+    792.7,
+    399.7
+   ],
+   "leds": [
+    {
+     "lit": "EQ_eq_white_led.png",
+     "rect": [
+      814.7,
+      410.0,
+      19.3,
+      8.0
+     ]
+    }
+   ],
+   "name": [
+    798.5,
+    394.9,
+    49.7,
+    9.9,
+    1.2
+   ],
+   "out": [
+    851.1,
+    399.7
+   ],
+   "rect": [
+    791.8,
+    372.9,
+    1.2,
+    87.8
+   ],
+   "switch": [
+    808.6,
+    392.8,
+    30.0,
+    29.6
+   ],
+   "thumb": "t_EQ_eq_white.png"
+  },
+  "NR/gate_grey": {
+   "hero": {
+    "img": "h_NR_gate_grey.png",
+    "knobs": [
+     {
+      "r": 14.2,
+      "sy": 1,
+      "type": "pointer_gate_grey",
+      "x": 44.5,
+      "y": 40.3
+     },
+     {
+      "r": 14.2,
+      "sy": 1,
+      "type": "pointer_gate_grey",
+      "x": 69.3,
+      "y": 40.3
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_NR_gate_grey_led.png",
+      "rect": [
+       44.3,
+       36.4,
+       60.0,
+       102.1
+      ]
+     }
+    ],
+    "name": [
+     21.4,
+     70.1,
+     71.0,
+     34.5
+    ],
+    "size": [
+     114.3,
+     175.0
+    ]
+   },
+   "img": "NR_gate_grey.png",
+   "img_rect": [
+    699.3,
+    354.7,
+    120.0,
+    151.3
+   ],
+   "in": [
+    723.0,
+    408.2
+   ],
+   "knobs": [
+    {
+     "r": 7.6,
+     "sy": 0.5,
+     "type": "pointer_gate_grey",
+     "x": 739.7,
+     "y": 381.3
+    },
+    {
+     "r": 7.6,
+     "sy": 0.5,
+     "type": "pointer_gate_grey",
+     "x": 753.1,
+     "y": 381.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "NR_gate_grey_led.png",
+     "rect": [
+      736.7,
+      386.0,
+      19.3,
+      26.7
+     ]
+    }
+   ],
+   "name": [
+    725.9,
+    401.6,
+    38.0,
+    7.6,
+    1.3
+   ],
+   "out": [
+    770.5,
+    408.2
+   ],
+   "rect": [
+    715.2,
+    382.7,
+    9.8,
+    78.0
+   ],
+   "switch": [
+    725.9,
+    395.5,
+    33.2,
+    30.0
+   ],
+   "thumb": "t_NR_gate_grey.png"
+  },
+  "PRE/brushed": {
+   "hero": {
+    "img": "h_PRE_brushed.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_brushed",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_brushed",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_brushed",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_PRE_brushed_led.png",
+      "rect": [
+       40.7,
+       45.0,
+       85.7,
+       40.7
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "PRE_brushed.png",
+   "img_rect": [
+    520.0,
+    342.7,
+    156.0,
+    163.3
+   ],
+   "in": [
+    565.3,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_brushed",
+     "x": 576.4,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_brushed",
+     "x": 592.9,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_brushed",
+     "x": 609.4,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "PRE_brushed_led.png",
+     "rect": [
+      574.7,
+      378.0,
+      31.3,
+      38.7
+     ]
+    }
+   ],
+   "name": [
+    564.2,
+    395.6,
+    42.0,
+    8.4,
+    1.4
+   ],
+   "out": [
+    623.7,
+    399.7
+   ],
+   "rect": [
+    536.6,
+    372.9,
+    37.0,
+    87.8
+   ],
+   "switch": [
+    555.8,
+    392.8,
+    39.1,
+    29.6
+   ],
+   "thumb": "t_PRE_brushed.png"
+  },
+  "PRE/cream": {
+   "hero": {
+    "img": "h_PRE_cream.png",
+    "knobs": [
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_cream",
+      "x": 37.1,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_cream",
+      "x": 68.4,
+      "y": 48.5
+     },
+     {
+      "r": 17.8,
+      "sy": 1,
+      "type": "pointer_cream",
+      "x": 99.7,
+      "y": 48.5
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_PRE_cream_led.png",
+      "rect": [
+       40.0,
+       44.3,
+       87.1,
+       41.4
+      ]
+     }
+    ],
+    "name": [
+     23.7,
+     86.0,
+     89.4,
+     43.4
+    ],
+    "size": [
+     137.1,
+     215.7
+    ]
+   },
+   "img": "PRE_cream.png",
+   "img_rect": [
+    520.0,
+    342.7,
+    156.0,
+    163.3
+   ],
+   "in": [
+    565.3,
+    399.7
+   ],
+   "knobs": [
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_cream",
+     "x": 576.4,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_cream",
+     "x": 592.9,
+     "y": 370.3
+    },
+    {
+     "r": 9.4,
+     "sy": 0.5,
+     "type": "pointer_cream",
+     "x": 609.4,
+     "y": 370.3
+    }
+   ],
+   "leds": [
+    {
+     "lit": "PRE_cream_led.png",
+     "rect": [
+      575.3,
+      378.0,
+      30.0,
+      38.7
+     ]
+    }
+   ],
+   "name": [
+    564.2,
+    395.6,
+    42.0,
+    8.4,
+    1.4
+   ],
+   "out": [
+    623.7,
+    399.7
+   ],
+   "rect": [
+    536.6,
+    372.9,
+    37.0,
+    87.8
+   ],
+   "switch": [
+    555.8,
+    392.8,
+    39.1,
+    29.6
+   ],
+   "thumb": "t_PRE_cream.png"
+  },
+  "VOL/treadle_black": {
+   "frames": [
+    {
+     "img": "VOL_treadle_black_0.png",
+     "img_rect": [
+      937.3,
+      332.7,
+      176.0,
+      180.0
+     ]
+    },
+    {
+     "img": "VOL_treadle_black_1.png",
+     "img_rect": [
+      937.3,
+      340.0,
+      176.0,
+      172.7
+     ]
+    },
+    {
+     "img": "VOL_treadle_black_2.png",
+     "img_rect": [
+      937.3,
+      346.0,
+      176.0,
+      166.7
+     ]
+    },
+    {
+     "img": "VOL_treadle_black_3.png",
+     "img_rect": [
+      937.3,
+      348.7,
+      176.0,
+      164.0
+     ]
+    },
+    {
+     "img": "VOL_treadle_black_4.png",
+     "img_rect": [
+      937.3,
+      348.7,
+      176.0,
+      164.0
+     ]
+    }
+   ],
+   "hero": {
+    "frames": [
+     "h_VOL_treadle_black_0.png",
+     "h_VOL_treadle_black_1.png",
+     "h_VOL_treadle_black_2.png",
+     "h_VOL_treadle_black_3.png",
+     "h_VOL_treadle_black_4.png"
+    ],
+    "img": "h_VOL_treadle_black_2.png",
+    "size": [
+     153.6,
+     288.6
+    ]
+   },
+   "img": "VOL_treadle_black_2.png",
+   "img_rect": [
+    937.3,
+    346.0,
+    176.0,
+    166.7
+   ],
+   "in": [
+    974.1,
+    424.1
+   ],
+   "leds": [],
+   "out": [
+    1049.1,
+    424.1
+   ],
+   "rect": [
+    952.6,
+    346.7,
+    34.8,
+    120.2
+   ],
+   "thumb": "t_VOL_treadle_black.png"
+  },
+  "WAH/treadle_black": {
+   "frames": [
+    {
+     "img": "WAH_treadle_black_0.png",
+     "img_rect": [
+      851.3,
+      332.7,
+      157.3,
+      180.0
+     ]
+    },
+    {
+     "img": "WAH_treadle_black_1.png",
+     "img_rect": [
+      851.3,
+      340.0,
+      157.3,
+      172.7
+     ]
+    },
+    {
+     "img": "WAH_treadle_black_2.png",
+     "img_rect": [
+      851.3,
+      346.0,
+      157.3,
+      166.7
+     ]
+    },
+    {
+     "img": "WAH_treadle_black_3.png",
+     "img_rect": [
+      851.3,
+      348.7,
+      157.3,
+      164.0
+     ]
+    },
+    {
+     "img": "WAH_treadle_black_4.png",
+     "img_rect": [
+      851.3,
+      348.7,
+      157.3,
+      164.0
+     ]
+    }
+   ],
+   "hero": {
+    "frames": [
+     "h_WAH_treadle_black_0.png",
+     "h_WAH_treadle_black_1.png",
+     "h_WAH_treadle_black_2.png",
+     "h_WAH_treadle_black_3.png",
+     "h_WAH_treadle_black_4.png"
+    ],
+    "img": "h_WAH_treadle_black_2.png",
+    "size": [
+     153.6,
+     288.6
+    ]
+   },
+   "img": "WAH_treadle_black_2.png",
+   "img_rect": [
+    851.3,
+    346.0,
+    157.3,
+    166.7
+   ],
+   "in": [
+    876.7,
+    424.1
+   ],
+   "leds": [],
+   "out": [
+    951.6,
+    424.1
+   ],
+   "rect": [
+    867.2,
+    346.7,
+    15.3,
+    120.2
+   ],
+   "thumb": "t_WAH_treadle_black.png"
+  },
+  "rack/DLY": {
+   "display": [
+    967.6,
+    170.2,
+    39.1,
+    9.4
+   ],
+   "hero": {
+    "display": [
+     43.6,
+     7.3,
+     48.6,
+     11.7
+    ],
+    "img": "h_rack_DLY.png",
+    "knobs": [
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 117.4,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 137.7,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 158.0,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 178.2,
+      "y": 13.6
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_rack_DLY_led.png",
+      "rect": [
+       6.4,
+       4.3,
+       197.1,
+       19.3
+      ]
+     }
+    ],
+    "size": [
+     226.4,
+     28.6
+    ]
+   },
+   "img": "rack_DLY.png",
+   "img_rect": [
+    912.7,
+    138.7,
+    251.3,
+    98.7
+   ],
+   "in": [
+    936.2,
+    175.6
+   ],
+   "knobs": [
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1028.3,
+     "y": 175.5
+    },
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1044.6,
+     "y": 175.5
+    },
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1060.9,
+     "y": 175.5
+    },
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1077.2,
+     "y": 175.5
+    }
+   ],
+   "leds": [
+    {
+     "lit": "rack_DLY_led.png",
+     "rect": [
+      1086.0,
+      166.7,
+      10.0,
+      9.3
+     ]
+    }
+   ],
+   "out": [
+    1109.4,
+    175.6
+   ],
+   "rect": [
+    936.1,
+    168.0,
+    173.7,
+    15.1
+   ],
+   "thumb": "t_rack_DLY.png"
+  },
+  "rack/MOD": {
+   "display": [
+    968.0,
+    154.3,
+    39.2,
+    9.4
+   ],
+   "hero": {
+    "display": [
+     43.6,
+     7.3,
+     48.6,
+     11.7
+    ],
+    "img": "h_rack_MOD.png",
+    "knobs": [
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 117.4,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 137.7,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 158.0,
+      "y": 13.6
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_rack_MOD_led.png",
+      "rect": [
+       90.0,
+       4.3,
+       113.6,
+       10.0
+      ]
+     }
+    ],
+    "size": [
+     226.4,
+     28.6
+    ]
+   },
+   "img": "rack_MOD.png",
+   "img_rect": [
+    913.3,
+    124.0,
+    251.3,
+    97.3
+   ],
+   "in": [
+    936.5,
+    159.7
+   ],
+   "knobs": [
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1028.8,
+     "y": 159.5
+    },
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1045.2,
+     "y": 159.5
+    },
+    {
+     "r": 4.0,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1061.5,
+     "y": 159.5
+    }
+   ],
+   "leds": [
+    {
+     "lit": "rack_MOD_led.png",
+     "rect": [
+      1086.7,
+      150.7,
+      10.0,
+      10.0
+     ]
+    }
+   ],
+   "out": [
+    1110.1,
+    159.7
+   ],
+   "rect": [
+    936.4,
+    152.1,
+    174.1,
+    15.2
+   ],
+   "thumb": "t_rack_MOD.png"
+  },
+  "rack/RVB": {
+   "display": [
+    967.2,
+    186.0,
+    39.0,
+    9.3
+   ],
+   "hero": {
+    "display": [
+     43.6,
+     7.3,
+     48.6,
+     11.7
+    ],
+    "img": "h_rack_RVB.png",
+    "knobs": [
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 117.4,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 137.7,
+      "y": 13.6
+     },
+     {
+      "r": 4.9,
+      "sy": 1,
+      "type": "rack_rack_dark",
+      "x": 158.0,
+      "y": 13.6
+     }
+    ],
+    "leds": [
+     {
+      "lit": "h_rack_RVB_led.png",
+      "rect": [
+       90.0,
+       4.3,
+       113.6,
+       10.0
+      ]
+     }
+    ],
+    "size": [
+     226.4,
+     28.6
+    ]
+   },
+   "img": "rack_RVB.png",
+   "img_rect": [
+    912.7,
+    152.7,
+    250.7,
+    100.7
+   ],
+   "in": [
+    935.9,
+    191.3
+   ],
+   "knobs": [
+    {
+     "r": 3.9,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1027.8,
+     "y": 191.4
+    },
+    {
+     "r": 3.9,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1044.0,
+     "y": 191.4
+    },
+    {
+     "r": 3.9,
+     "sy": 1.0,
+     "type": "rack_rack_dark",
+     "x": 1060.3,
+     "y": 191.4
+    }
+   ],
+   "leds": [
+    {
+     "lit": "rack_RVB_led.png",
+     "rect": [
+      1085.3,
+      182.7,
+      10.0,
+      9.3
+     ]
+    }
+   ],
+   "out": [
+    1108.7,
+    191.3
+   ],
+   "rect": [
+    935.8,
+    183.8,
+    173.3,
+    15.0
+   ],
+   "thumb": "t_rack_RVB.png"
+  }
+ },
+ "version": 1,
+ "zones": {
+  "AMP": [
+   574.7,
+   60.5,
+   248.8,
+   111.0
+  ],
+  "CAB": [
+   573.3,
+   179.1,
+   250.4,
+   173.0
+  ],
+  "DLY": [
+   936.1,
+   168.0,
+   173.7,
+   15.1
+  ],
+  "DST": [
+   625.9,
+   372.9,
+   24.4,
+   87.8
+  ],
+  "EQ": [
+   791.8,
+   372.9,
+   1.2,
+   87.8
+  ],
+  "MOD": [
+   936.4,
+   152.1,
+   174.1,
+   15.2
+  ],
+  "NR": [
+   715.2,
+   382.7,
+   9.8,
+   78.0
+  ],
+  "PRE": [
+   536.6,
+   372.9,
+   37.0,
+   87.8
+  ],
+  "RVB": [
+   935.8,
+   183.8,
+   173.3,
+   15.0
+  ],
+  "VOL": [
+   952.6,
+   346.7,
+   34.8,
+   120.2
+  ],
+  "WAH": [
+   867.2,
+   346.7,
+   15.3,
+   120.2
+  ]
+ }
+}

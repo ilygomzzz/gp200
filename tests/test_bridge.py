@@ -31,6 +31,11 @@ class RackArtTests(unittest.TestCase):
         self.assertEqual(bridge.rack_display("AMP", [("Gain", 5)]), (["Gain 5"], ["Gain 5"]))
         self.assertEqual(bridge.rack_display("DLY", []), ([], []))
 
+    def test_unit_view_key(self):
+        self.assertEqual(bridge.unit_view(preset(), "DLY")["key"], "rack/DLY")
+        self.assertTrue(bridge.unit_view(preset(), "CAB")["key"].startswith("CAB/"))
+        self.assertTrue(bridge.unit_view(preset(), "AMP")["key"].startswith("AMP/"))
+
     def test_unit_view_art_fields(self):
         v = bridge.unit_view(preset(), "DLY")
         self.assertEqual((v["kind"], v["family"]), ("rack", "rack_dark"))
@@ -114,3 +119,21 @@ class BoardTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CablePath(unittest.TestCase):
+    RECTS = [(574, 60, 249, 111), (573, 179, 250, 173), (556, 373, 70, 88), (637, 373, 70, 88), (936, 152, 174, 45)]
+
+    def test_endpoints_deterministic_and_clear(self):
+        import art
+        for p0, p1 in (((70, 470), (556, 430)), ((700, 400), (1100, 200)), ((800, 250), (1500, 232))):
+            a, b = art.cable_path(p0, p1, self.RECTS, 1), art.cable_path(p0, p1, self.RECTS, 1)
+            self.assertEqual(a, b)
+            self.assertEqual((a[0], a[-1]), (p0, p1))
+            own = [r for r in self.RECTS for p in (p0, p1) if r[0] - 8 <= p[0] <= r[0] + r[2] + 8 and r[1] - 8 <= p[1] <= r[1] + r[3] + 8]
+            self.assertFalse(art._hits(a, self.RECTS, own), (p0, p1))
+
+    def test_negative_lane_drops_blocked(self):
+        import art
+        self.assertEqual(art.cable_path((0, 100), (200, 100), [(90, 50, 20, 100)], -1), [])
+        self.assertTrue(art.cable_path((0, 100), (200, 100), [], -1))

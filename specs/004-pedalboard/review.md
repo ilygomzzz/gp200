@@ -190,3 +190,49 @@ Notes (not blocking):
 - Amp nameplate contrast is now asserted >= 4.5 in tests (copper 4.95 per the coordinator; not independently re-computed).
 
 Not checked: real window/MultiEffect, real pedal, mouse click on a stage unit (only through `board.select`), performance numbers.
+
+# Phase 2C (rendered rig), S3 round: reviewer
+
+Verdict: **CHANGES** (uncommitted tree; offscreen only; Blender not run; pedal not touched). Line 1 above still holds the phase 1 verdict; this section is the 2C verdict.
+
+Method: `python3 -m unittest discover tests` = 55 tests OK (includes `test_main_loads_without_warnings` = 0 QML warnings, `test_no_loose_hex_in_render_scripts`, `test_no_overlap_inside_stage`, `test_unit_keys`). Grep for hex, privacy, size, deleted-file refs; viewed `shots/S3-slice.png`, `S3-window.png`, `S3-closeup-AMP.png`, `S3-compact.png`.
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| Unit tests pass | pass | 55 OK |
+| QML smoke 0 warnings | pass | `tests/test_app.py:91-119` asserts `warnings == []` |
+| No hex outside theme.py (incl. tools/render) | pass | grep over `app/qml`, `tools/render`, `app/art.py`, `app/bridge.py`, `app/gp200_app.py`: none. Only `tests/test_render.py:21,36-37` (test fixtures). `theme.py` holds 37 hex (allowed) |
+| No downloaded assets, text or brand logos baked | pass (by grep) | no `text_add`/font/http/urllib in `tools/render/*.py`; no `.nam`, `.wav`, `.bak` in repo; `backups/` empty and gitignored. Visual check: no logos seen in S3 shots. Full check needs a Blender run (not done) |
+| `app/assets/render` ≤ 12 MB | pass | 11,159,517 bytes (11.16 MB decimal); largest file < 600 KB; `plate.jpg` 281,979 bytes (≤ 700 KB) |
+| Privacy (no personal paths/emails, no backups, no nam/wav) | pass for committed files | `grep ~` over tools, app, specs, tests, presets, mapa, CLAUDE.md, constitution.md: no hits. **But** untracked `z.png` in repo root (see F1) |
+| Deleted vector files: no remaining references | pass | `AmpHead|Cabinet|RackUnit|Treadle|EqBox` only in `spec.md:325` (the rule itself). Vector parts still used: see F2 |
+| S3 shots look correct | partial | see F3, F4 |
+| 2C.15 audit (determinism, budget table, originality checklist, O3, B3-medium, GP200_FX=0 identical, real-pedal smoke) | **not done** | `tasks.md:183` unticked; no `B3-*`, `H3-*`, `N3-*`, `P3-*`, `C3-*`, `I3-*`, `O3-*`, `M3-*`, `D3-*` shots in `shots/` (only S1/S2/S3 sets, 9 S3 files) |
+| Lead-approved cable simplification | accepted | `notes.md` "Deviation decided by the lead". `S3-slice.png` shows the accepted rack/cab drops |
+
+## Failures (blocking)
+
+- **F1 stray file**: `z.png` (1,117,760 bytes, 2304×748, untracked) in the repo root. Not in any spec. Delete it before commit (the file is not mine to delete; reviewer does not edit).
+- **F2 vector gear still reachable**: `app/qml/Unit.qml:47` `Stompbox { visible: u.ghost; ... ghost: true }`, reached through `app/qml/Pedalboard.qml:61` `Unit {`, which `app/qml/Main.qml:79` instantiates unconditionally. Spec (full 2C, B3): "zero 2B vector units ... no `Stompbox` reachable". The 2C revision says "no 2B vector unit left anywhere", and 2C.14 is ticked. Expected: ghost/loading states use default-family sprites (spec O3 "loading: default-family sprites at 20 % as ghosts"), or `Pedalboard`/`Unit`/`Stompbox`/`Cable` deleted if dead. `Cable` is only used by `Pedalboard.qml:49`.
+- **F3 overlap in the hero (S3-window.png)**: the footswitch of the AMP hero (around x 830–885, y 935–990 in the 1888 px shot) sits across the bottom border of the hero panel and over the "Encendido" tag. Rule of the S2 review: "nothing may overlap". Expected: footswitch fully inside the panel, or the panel grows (`CloseUp.qml` hero/controls row; the `Layout.minimumHeight: 148` change pushed it out earlier).
+- **F4 2C.15 not done**: determinism (two `all` runs), budget table, originality checklist and the full-2C shot set are missing. Per the spec the full 2C is not accepted until they exist. A slice-only verdict would be APPROVED for S3 at most. (Not run here: Blender is a slow path and was excluded by the lead.)
+
+## Shot notes (S3, looked at)
+
+- `S3-slice.png`: wooden room, plank wall, red/black rug and the pedalboard read as one room. Pedals and head are clearly rendered now; knob caps and the 34B head are believable. Good.
+- `S3-window.png`: chips, chain strip and the hero head render well. The footswitch issue is F3.
+- `S3-closeup-AMP.png`: the knobs are rendered caps (`Knob` with `sprite: "pointer_alu"`, `CloseUp.qml:128`), and the head is the rendered model. The rug lane and the cable routing are clean.
+- `S3-compact.png`: rendered thumbnails in the cells; rack units (Detune/Pure/Room) are thin strips, hard to read. Chain-order cables run through the cells as lines above the labels; fine for now.
+
+## Suggestions (taste, not blocking)
+
+- Pedal bodies read a little clean at the stage scale; the rustic pass (the S2 round) is only partly visible. Scuffs and wear are hard to see at 1888 px.
+- Cable drops from the rack and cab (`S3-slice.png` around x 1270–1340) still look like air lines. Accepted as a lead deviation, but a short shadow under the drop would help.
+- Hero text name is elided on narrow heroes (noted in `notes.md`, "Laz..."), consider a second line.
+
+## Security / performance pass (diff)
+
+- Subprocess and shell: not separately grepped in this pass; the render scripts read `app/theme.py` via `ast` (no exec). Re-check before commit.
+- Paths: `load_manifest` rejects traversal and subdirectories (`tests/test_render.py:49-53`).
+- Blocking: `asynchronous` image loading and timers/polling in the new QML were not checked in this pass (not measured offscreen).
+- Nothing new sent to the pedal (`bin/gp200`, `model.py`, `chat.py` untouched in the diff).

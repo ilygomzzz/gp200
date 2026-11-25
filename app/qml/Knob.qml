@@ -19,6 +19,7 @@ FocusScope {
     property string label: ""
     property real defaultValue: from
     property string lockTip: ""
+    property string sprite: ""  // rendered cap type (manifest knob_types); covers the drawn cap, arc/ticks stay
     signal moved(real v)
     readonly property real pad: mini ? 0 : onFace ? 28 : 16
     readonly property real frac: to > from ? Math.max(0, Math.min(1, (value - from) / (to - from))) : 0
@@ -68,6 +69,7 @@ FocusScope {
             PathAngleArc { centerX: k.cx; centerY: k.cy; radiusX: tickPath.r; radiusY: tickPath.r; startAngle: 135; sweepAngle: 270 }
         }
     }
+    KnobSprite { z: 3; visible: k.sprite !== ""; type: k.sprite; value: k.frac; cx: k.cx; cy: k.cy; r: k.dia / 2 }
     Rectangle { visible: !k.mini; x: k.cx - k.dia / 2; y: k.cy - k.dia / 2; width: k.dia; height: k.dia; radius: k.dia / 2; color: T.knob_skirt }
     Shape {  // 48 knurl ticks = one dashed circle (dash lengths are in stroke widths)
         visible: !k.mini

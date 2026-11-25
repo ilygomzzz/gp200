@@ -1,0 +1,11 @@
+{"name": "One More Light",
+ "blocks": {
+   "PRE": {"effect": "COMP", "params": {"Sustain": 40, "Volume": 55}},
+   "AMP": {"effect": "Silver Twin", "params": {"Gain": 25, "Volume": 55, "Bass": 45, "Middle": 45, "Treble": 58}},
+   "NR":  {"effect": "Gate 1", "params": {"Threshold": 15}},
+   "CAB": {"effect": "Dark CS", "params": {"Low Cut": 90, "High Cut": 8000}},
+   "MOD": {"effect": "C-Chorus", "params": {"Mode": "2"}},
+   "DLY": {"effect": "Digital Delay S", "params": {"Mix": 22, "Time": 500, "Feedback": 35, "Trail": "ON"}},
+   "RVB": {"effect": "Sweet Space", "params": {"Mix": 35, "Pre Delay": 40, "Decay": 70, "Lo End": -15, "Hi End": 5, "Trail": "ON"}},
+   "VOL": {"effect": "Volume", "params": {"Volume": 100}}
+ }}

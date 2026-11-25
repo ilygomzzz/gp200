@@ -279,3 +279,70 @@ tiles from `tools/make_textures.py` remain allowed for QML-drawn surfaces."
 - Q1–Q5: proposed defaults (frontal camera ~26° down, carpet floor, QML cables with rendered plugs, black cables with state on plug ring, no depth of field).
 - Q6: user approves the slice shots before the rest is rendered.
 - Blender 5.3.0 installed; OptiX and CUDA devices available (RTX 3060).
+
+### Decisions (2C revision, 2026-11-25)
+User on the slice shots (S1-slice, S1-closeup), verbatim: "ha quedado muyy plastico, busca alguna skill para blender,
+haz una habitación calida como de madera, con un alfombra como moqueta con colores rojos y negros con tribales o algo,
+y upgradea los iconos de cada dispositivo tanto cuando lo escoges como lo que se ve".
+Read as (defaults taken, details in design.md "2C revision"):
+- Look: de-plastic every material with PBR values from the installed `blender-materials`/`-lighting`/`-rendering` skills
+  (their recipes and values only; we keep headless `blender -b -P tools/render/rig.py`, no MCP).
+- Room: warm wooden room (vertical plank panelling, plank floor visible around the rug, tungsten practicals 2700–3200 K,
+  darker corners). The charcoal carpet floor and slate plaster wall of 2C are dropped.
+- Rug: large carpet-like rug under the pedalboard and gear, red + black original geometric/tribal pattern, pile bump + sheen.
+- Gear: every device is a rendered model in the scene **and** in the close-up hero (no 2B vector unit left anywhere,
+  including PRE, NR, EQ, WAH/VOL treadles, rack units); hero knobs are rendered caps, not flat dots.
+- "Iconos de cada dispositivo": chain-strip chips, the close-up effect picker and compact cells show a rendered
+  thumbnail of the device (same models) next to the text label; glyphs stay for buttons.
+- Cables: natural curves lying on the rug (no right-angle lanes).
+- Order: materials + lighting + wood room + rug plate → re-render the 34B slice (checkpoint) → all units → heroes →
+  thumbnails → cables. Originality rules unchanged; budget raised to what the full set really needs (≤ 12 MB kept).
+
+### Acceptance — 2C revision (replaces R0-plate / S1-* above; full-2C list below still applies with these changes)
+- **R1-plate.png** (`plate.jpg`, 2400×780): wooden room. Back wall of vertical planks (≈ 12 cm wide, V-grooves that catch
+  the key light, per-plank tone/grain variation: no two neighbours identical, no visible repeat), a chair rail and a darker
+  skirting; plank floor visible in the front corners and along the wall; the rug covers the centre (pedalboard on it, cab
+  and rack-stand feet on its back edge). Caged bulb top-left and a shaded floor lamp right make warm pools on the wood;
+  corners fall to dark brown but keep grain detail (no pixel < 6/255 in a 64-px corner patch mean, none clipped white
+  except the bulbs). Two framed acoustic panels in dark umber cloth. No text, logo, brand.
+- **Rug** (in R1): red field + black border/motifs, stepped-diamond medallion + zig-zag border bands (original formula
+  in design.md); visible knot/pile texture and abrash (row tone drift); a worn, flatter patch where the player stands;
+  bound edge with real thickness. Motifs 12–25 cm (readable at 1.5 px/su). "Guitarra"/"Salida" labels keep ≥ 4.5:1
+  contrast against the plate pixels behind them (measured, listed in notes.md).
+- **S2-slice.png** (1888×1016, 34B, AMP selected): same units as S1 re-rendered with the new materials: dark tolex with
+  pebble grain and rubbed lighter edges, grille cloth darker than its body trim with visible weave and speaker rings
+  ghosting through, brushed-metal panel with anisotropic streak, chrome with crisp highlight, knobs with knurl glints,
+  screws on panels/corners; no flat single-tone surface larger than a knob. Units not in the slice still show the 2B
+  component (last time this is allowed).
+- **S2-closeup.png** (AMP close-up mid-drag on Gain): hero rendered at ≥ 2 px per hero px with rendered knob caps (knurl,
+  specular ring, pointer line) on the panel; the face's parameter knobs use the same rendered caps; live value arc and
+  "Gain 63" bubble unchanged.
+- **S2-knob-sheet.png** (scratch): pointer cap at 0/25/50/75/100 %: highlight ring stays put while the line and knurl
+  glints rotate with the cap.
+- **Checkpoint**: S2 shots go to the user before 2C.9 starts (one look; if no change is asked the round continues).
+
+Full-2C additions/changes:
+- **B3-rig.png / B3-rig-alt.png**: zero 2B vector units (grep: no `AmpHead|Cabinet|RackUnit|Treadle|EqBox|Stompbox`
+  instance reachable from `SceneUnit.qml`); every `unit_key` that `art_for` can return has a manifest entry (unit test).
+- **H3-heroes.png** (scratch contact sheet): a hero for every kind/family (6 heads, 3 cab families, rack, 2 PRE, 4 DST,
+  NR, EQ, treadle), each with rendered knob caps / fader thumbs at their live positions.
+- **N3-chips.png** (chain strip crop, 34B, DST off): every chip = state dot + device thumbnail + block label; OFF chip
+  thumbnail at reduced opacity and label `ink_soft` (state never by colour alone: dot + label tone + "apagado" in the
+  accessible name). **P3-picker.png**: AMP effect picker open, each row with the thumbnail of the family that effect maps to.
+- **C3-cables.png** (+ 3 reorder frames): cables lie on the rug as smooth curves (no straight lane segments, no right
+  angles, no loops in the air), drop from jacks with a short sag, parallel cables fan out instead of stacking; widths and
+  contact shadows follow depth; plugs stay on jacks during a reorder.
+- Budget: `app/assets/render/` ≤ 12 MB; `plate.jpg` ≤ 700 KB; any PNG ≤ 600 KB; each hero JPEG ≤ 250 KB; each
+  thumbnail ≤ 24 KB. Expected total ≈ 8–9 MB (table in design.md).
+
+### Constitution change 7 (needs user OK; applied in task 2C.R1)
+Add to the gear-art sentence in Look: "Rendered device thumbnails (same models) may stand next to a block's text label
+in chips, pickers and cells; glyph icons stay for buttons." No other rule changes. Separately (a fix, not a change):
+`tools/render/models.py` holds loose hex colours (`#c3c9ce`, `#9aa3ab`, `#101112`, `#0b0b0c`, `#16171a`, `#17181a`…),
+which the current rule already forbids; they move to `theme.py` tokens.
+
+### Decisions (2C S2 review, user 2026-11-25)
+User: "se ve mejor, pero se nota muy plastico, que sea mas rustico todo, y luego, las posiciones de las cosas, algunas se superponen o estan mal, y quiero rehacer los iconos de los pedales y todo eso".
+- Direction OK; next round = rustic/aged look everywhere: rough-sawn wood with knots, dust, scuffs; tolex scuffs and worn corners; dulled/pitted chrome, tarnish on brass/copper; chipped paint on pedal edges; rug pile irregularity and wear; grime in crevices. Lower specular overall; no clear-coat anywhere.
+- Layout: nothing may overlap (stage units, rack, cables' plugs, labels Guitarra/Salida); every unit sits in a manifest zone; a test asserts no zone/rect intersections and all rects inside the stage.
+- Redo the pedal/device visuals: every unit rendered (2C.9–2C.12), no vector unit left; rendered thumbnails for chips/cells. Constitution change 7 approved by "quiero rehacer los iconos de los pedales" (thumbnails next to the always-visible text label).

@@ -10,6 +10,7 @@ from PyQt6.QtQml import QQmlApplicationEngine  # noqa: E402
 from PyQt6.QtQuick import QQuickWindow  # noqa: E402
 from PyQt6.QtQuickControls2 import QQuickStyle  # noqa: E402
 
+import art  # noqa: E402
 import theme  # noqa: E402
 from bridge import Board, ChatView  # noqa: E402
 from chat import ChatHub  # noqa: E402
@@ -32,7 +33,7 @@ class Shell:
         self.hub.wrote_slots.connect(self._wrote)
         self.engine = QQmlApplicationEngine()
         ctx = self.engine.rootContext()
-        for name, obj in (("T", theme.qml_tokens()), ("board", self.board), ("slotChat", self.slot_chat),
+        for name, obj in (("T", theme.qml_tokens()), ("R", art.load_manifest(theme.render_dir + "/manifest.json")), ("board", self.board), ("slotChat", self.slot_chat),
                           ("globalChat", self.global_chat), ("pedal", self.pedal)):
             ctx.setContextProperty(name, obj)
         self.engine.warnings.connect(lambda ws: [print(w.toString(), file=sys.stderr) for w in ws])

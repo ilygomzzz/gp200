@@ -690,3 +690,199 @@ asynchronously in QML. Renders are produced offline by Blender, never at runtime
 
 ### Copy (Spanish, new)
 None new on screen. Tooltips unchanged. Accessible names unchanged.
+
+## 2C revision (2026-11-25, after the slice review) — supersedes "Phase 2C" Room, Materials, Lights, Cables, Knobs where they conflict
+Sources: skills `blender-materials` (metallic switch, recipes 1/4/7/10/12, pitfalls), `blender-lighting` (recipe 0a
+`wood`/`fabric` ratios, 0c practicals, colour-temperature table), `blender-rendering` (AgX, sample guide, bounces).
+Used as values only; scripts stay headless (`blender -b -P tools/render/rig.py -- JOB`).
+
+### Diagnosis — why S1 reads as plastic (from `materials.py`, `models.py`, `rig.py` and the shots)
+1. **Metallic in-betweens**: `painted(..., 0.6)` for gold/copper faces and `steel_black` Metallic 0.8 — the skill's #1
+   "plasticky" cause. Rack rails/stand/mic stand all use `steel_black`.
+2. **Sheen + sub-pixel bump wash dark tolex to beige**: `tolex` has Sheen 0.35 (white tint) and a 2 mm Voronoi bump at
+   strength 0.9 (scale 520/m); at 1.5 px/su one pixel ≈ 1.4 mm on the head, so the bump is sub-pixel noise that scatters
+   the key highlight over the whole face → `blackface` (body `#1a1b1f`) renders as a taupe box. Same for cab tolex.
+3. **Detail at the wrong frequency**: grille weave at 1100 threads/m (0.9 mm) and carpet fibre at 1800/m are invisible
+   at render scale and get denoised flat; nothing varies at the 1–20 cm scale the eye actually reads (seams, scuffs,
+   dust, tone drift) → surfaces look like one moulded material.
+4. **Uniform roughness, no edge story**: roughness is constant or ±0.07 everywhere (`satin`, `rubber`, `knob`, `powder`);
+   no edge wear, no rubbed corners, no dust; bevels exist (3–7 mm) but nothing reacts to them. No screws/fasteners.
+5. **Lacquer on everything**: Coat 0.25–0.5 on powder coat, panels, knobs → toy-like gloss (the violet DST).
+6. **Grille cloth too bright and flat**: cloth base = family face at full value (`grille_silver` `#a9afb5`) with alpha 1
+   → a light-grey slab; no speaker rings show, no weave.
+7. **Knobs flat**: cap rendered under a symmetric dome at Strength 3 (`knob_job`) → no specular structure; the head uses
+   `pointer_alu` caps (`#c3c9ce`) → white discs ("flat dots") on the hero; knurl is a sine bump on the side only.
+8. **Light setup**: one big 4300 K key + 6500 K cool fill + 4300-ish rim over albedos that were lifted (`lift(..., 1.2)`)
+   to compensate a dim exposure: everything sits in the same mid value, same beige hue → clay-render look; no falloff,
+   corners as bright as the centre. World 0.004 gives almost no reflections to the metals (chrome reads grey).
+9. **Colour management** is right (AgX, Medium High Contrast) but exposure 0 with low wattage forced the albedo lifts above.
+10. **Constitution slip**: loose hex colours in `models.py` (metal, rubber, cones, handle leather).
+
+### Material rules (all recipes in `materials.py`; base colours from theme tokens; numbers are the spec)
+- **Metallic is 0 or 1**. `M.set` asserts `Metallic in (0, 1)` (cheap self-check; the matsheet run fails loudly otherwise).
+- **Albedo ranges (linear)**: black tolex/rubber/powder 0.02–0.04; dark wood 0.04–0.12; light wood ≤ 0.35; rug red ≈ 0.12–0.18,
+  rug black 0.015–0.025; cloth ≤ 0.25; metals' base ≥ 0.5 sRGB. No `lift()` above 1.0 on albedo any more; brightness comes from light/exposure.
+- **Edge mask helper** `M.edge(radius)`: Cycles `Bevel` node (radius 2–4 mm, 8 samples) → `1 − dot(bevel_N, N)` →
+  map range 0.002..0.05 → 0..1, × noise(scale 40, detail 4) threshold → wear mask. Bevel normal also feeds the BSDF
+  normal on boxes (rounded-edge highlight for free). **Dust mask** `M.dust()`: `Geometry.Normal.z` (up-facing) × noise scale 6.
+- **Mid-frequency variation** on every large surface: base × ramp(noise scale 3–8 /m, 0.9..1.08) and roughness ± 0.08
+  from an independent noise (scale 10–25 /m). Micro bump only where a pixel can show it (heroes are 2× denser).
+
+| Material | Principled values (Metallic 0 unless said) |
+|---|---|
+| tolex (vinyl) | base = family body; **no sheen**; Specular IOR Level 0.5; roughness 0.55 ± 0.08 (noise 15/m); pebble Voronoi smooth-F1 scale **300/m** + noise 1200 → Bump strength **0.35**, distance 1.5 mm; edge mask → base × 1.6 (rubbed, greyer) and roughness 0.38 (polished by hands); dust mask on tops: roughness +0.15, base +0.02 grey |
+| grille cloth | base = family face × **0.5** (linear) for silver/wheat, × 0.8 for black; plain weave at **400 threads/m** (x/y Wave bands, checker over/under) → Bump 0.5, colour ±8 %; Sheen 0.35, Sheen Roughness 0.4; roughness 0.9; **Alpha 0.85** so the speaker ring/cone geometry behind ghosts through; dust darkening toward the bottom 10 % (Generated z ramp) |
+| brushed aluminium (panels, trim, corners, rails) | **Metallic 1**, base F0 aluminium (0.91, 0.92, 0.92) × theme `metal` tint; roughness 0.28 ± 0.05 from noise stretched (1:400 along x); **Anisotropic 0.7**, tangent along x; fine scratch bump 0.05; edge mask → roughness 0.18 (polished edges) |
+| chrome (jacks, switches, plugs, bezels) | **Metallic 1**, base (0.55, 0.56, 0.55) (skill recipe 4); roughness 0.03–0.08 noise; smudge noise 30/m adds +0.1 roughness on 20 % of the area |
+| black powder/steel (rack rails, stand, mic stand, cast bases) | Metallic 0, base 0.025, roughness 0.45 ± 0.06, orange-peel bump (noise 800/m, 0.12); edge mask → **mix to bare steel** (Metallic 1, base 0.6, roughness 0.35) — a Mix Shader, so each sample is 0 or 1 |
+| powder coat (stompboxes) | base = family body; roughness 0.48 ± 0.06; **Coat 0**; orange peel as above; edge mask → bare die-cast aluminium (Metallic 1, base 0.8, rough 0.4) via Mix Shader; boot scuffs = noise mask in a 6 cm radius around the footswitch → roughness 0.65 |
+| painted panel (amp faces) | satin enamel: base = family face, roughness 0.4 ± 0.05, Coat 0.1 (rough 0.3). gold/copper families: **Metallic 1** anodised, base = family face (≥ 0.5 sRGB, it is), roughness 0.32, Anisotropic 0.4 (x) |
+| knob plastic | base = family knob; roughness 0.25 on the top (concave insert) / 0.4 on the knurl; IOR 1.46; Coat 0; knurl = **geometry** (cap built from a star polygon of 2·N verts alternating r and 0.94 r, extruded; N = 24 pedal, 36 amp); pointer line = inlaid geometry, cream `knob_cap_hi`-class token, roughness 0.45 |
+| metal knob (alu caps) | Metallic 1, base 0.9; spun finish = Anisotropic 0.8 with **radial** tangent; roughness 0.22; knurled skirt as above |
+| rubber (feet, boots, treads) | base 0.03, roughness 0.75 ± 0.1, Specular IOR Level 0.35; dust mask stronger (rubber holds dust) |
+| leather handle | base = `board_tolex`-class token × 1.2, roughness 0.5 ± 0.1, crease bump noise 60/m 0.3; edge mask → roughness 0.35 |
+| screws | Metallic 1, base 0.6, roughness 0.3; head = dome cylinder + two thin dark boxes (cross slot), rotated by a fixed per-screw angle (seeded) |
+| display glass | unchanged |
+
+Fasteners added in `models.py`: 4 screws per amp panel corner, 2 per corner protector, 4 per rack ear, 4 on every
+stompbox base (visible on heroes), 2 on the cab back-plate edge. Piping on the cab grille stays aluminium.
+
+### Room — wooden room (replaces "Room (plate)" floor/wall/panels; camera unchanged from the slice)
+```
+ front view of the plate (2400 x 780 px)
+ +--------------------------------------------------------------------------------------------+
+ | ||||||||||||||| vertical plank wall, 12 cm planks, V-grooves ||||||||||||||||||||||||||||||| |
+ | | [bulb]  [panel]          [ head ]            [ rack ]         [panel]   (lamp shade)    | |
+ | |                          [ cab  ]            [stand ]                     |             | |
+ | |=chair rail (z 0.9)=====================================================  |    o Salida | |
+ | |_skirting______________________________________________________________ __|____________| |
+ |  plank floor   /==== rug 2.6 x 1.5 m, black border, red field, medallion ====\ plank floor |
+ | Guitarra o    /  [ pedalboard: PRE DST NR EQ WAH VOL ]  worn patch (front)    \            |
+ +--------------------------------------------------------------------------------------------+
+```
+- **Wall** (y = `WALL_Y`): vertical planks 0.12 m × 2.6 m × 0.018 m, each a separate bevelled box (bevel 3 mm, 2 segs) with
+  a 4 mm dark gap (V-groove) → real grooves that catch the key light. Per plank: `Object Info.Random` → hue ±3 %,
+  value ±12 %, grain offset (Mapping location) and grain scale ±15 %. Wood shader = skill recipe 12 (Wave bands
+  along plank length, Distortion 4–6, + noise 8 multiply → ColorRamp `wood_lo` → `wood_hi`), plus ring-pore bump
+  (stretched noise 1:30, 0.15), roughness 0.55 ± 0.1, **Coat 0.3, Coat Roughness 0.25** (satin varnish), IOR 1.5.
+- **Chair rail** at z 0.9 m (0.06 × 0.025 m moulding, darker `wood_lo`), **skirting** 0.12 m darker stain, both varnished.
+- **Floor**: oak planks 0.18 m wide, random lengths 0.9–1.8 m (seeded), 2 mm gaps, same wood shader in `floor_lo`/`floor_hi`
+  (darker, redder), Coat 0.5 rough 0.15 (lacquered floor shows the lamps' reflections), dust in gaps.
+- **Acoustic**: keep **2** panels (0.6 × 0.6 m, 5 cm), one each side of the stack, dark umber fabric (`panel_cloth` token,
+  fabric = recipe 10 values: roughness 0.9, Sheen 0.4/0.5) in a 4 cm varnished wood frame. The other two go.
+- **Props** (lived-in, low count): mic stand (now powder/steel mix), the coiled spare cable now lies on the rug, a
+  **floor lamp** right (fabric drum shade, inner flipped-normal bright shell per skill lamp-shade recipe, emissive bulb
+  inside), the caged wall bulb left. Guitarra input and Salida wall plate are **baked into the plate** (static), the
+  manifest keeps their jack anchors.
+- **Lights** (world Strength 0 colour 0; reflections come from the room itself):
+
+  | Light | Type / size | Position (m) | Kelvin | Start power | Note |
+  |---|---|---|---|---|---|
+  | key | area 0.7 × 0.5, spread 50° | (−1.3, −0.6, 2.2) aimed at board centre/head | 3200 | 260 W | ratio key:fill ≈ 4:1 (skill `wood` profile), soft but directional |
+  | fill | area 2 × 1.5 | camera side, (0.6, −1.6, 1.4) | 3000 | 30 W | low; keeps shadows warm, never cool |
+  | rim | spot 40°, blend 0.7 | (0.4, 1.15, 2.3) behind stack | 3000 | 120 W | separates head/rack tops from the planks |
+  | bulb (wall, left) | emissive sphere 4 cm Strength 1500 + point 0.03 m 35 W | as slice | 2700 | — | warm pool on planks |
+  | lamp (floor, right) | emissive inner bulb + point 40 W inside shade | (1.9, 0.9, 1.3) | 2900 | — | pool on wall and rug right edge |
+  Kelvin via the existing `kelvin()` (or Blackbody node). Practicals dominate the edges, key the centre → natural falloff.
+- **Vignette**: physical first (lights above), plus one deterministic radial multiplier `vig(u, v)` (1.0 inside 55 % of
+  the half-diagonal, smoothstep to 0.72 at the corners) applied in `rig.py` numpy post to the plate **and** to every
+  sprite by its stage position, so composites match.
+- **Render**: AgX, look Medium High Contrast; **exposure set once by metering**: the script measures mean luminance of
+  the rug under the key (fixed stage rect) and sets exposure so it lands at 0.18 scene-linear → value logged in notes.
+  Plate 512 spp (skill: indoor bounce), sprites/heroes 256, knob layers 128, thumbnails 64; adaptive 0.01; OIDN
+  albedo+normal (kept for determinism); max bounces 12, diffuse 6, glossy 6, transmission 4, clamp indirect 10.
+
+### Rug (original procedural pattern, `materials.rug()`; geometry `models.rug()`)
+- Geometry: 2.6 × 1.5 m, 8 mm thick, edges bevelled 4 mm (3 segs) + a 3 cm **bound edge** strip (black, coarse
+  over-cast bump); no fringe (geometry cost; can be added later as a short Array of thin cylinders on the short ends).
+  Placement: centre (0, 0.35), so the board sits on the field and the cab/rack-stand feet rest on the back border.
+- Pattern in rug UV (u, v ∈ [−1, 1], aspect-corrected), all shader-node maths, colours `rug_red`, `rug_red_dk`, `rug_black`:
+  1. Border: `b = max(|u|·A, |v|)` bands → outer black (8 cm), red guard stripe (2 cm), **zig-zag frieze** band
+     (triangle wave `|fract(s·x) − 0.5|` vs the band's local y, stepped by `floor(·8)/8` so edges are knotted
+     stair-steps), inner black guard.
+  2. Field: red with a **stepped-diamond medallion** at the centre: `d = |u|·A + |v|`, quantised `floor(d·12)` →
+     alternating black/dark-red concentric step rings out to d 0.45, hooked tips = small offset squares on the 4 axes.
+  3. Scatter: small stepped crosses (Manhattan distance < r on a 22 cm cell grid, every other cell offset) in black, 12 %
+     coverage, skipping the medallion.
+  4. Knot grid: everything sampled on a 4 mm knot grid (`floor(uv·K)/K`) so edges stair-step like knots.
+  5. Abrash: tone drift along v (noise scale 1.5 on v only) ±7 %; per-knot white noise ±4 %.
+  Original: assembled from generic geometric primitives (bands, zig-zag, stepped diamond, cross); not traced from or
+  named after any real rug, region, maker or brand (added to the originality checklist).
+- Pile: Metallic 0; roughness 0.95; Specular IOR Level 0.2; **Sheen 0.6, Sheen Roughness 0.35**, Sheen Tint = base
+  lightened; bump = Voronoi tufts (scale 250/m, smooth F1) 0.6 + white noise 0.3, strength 0.6, distance 3 mm; colour
+  boundaries softened by a 1-knot blur (noise distortion 0.002) so it reads as pile, not print.
+- Wear: front-centre patch (where the player stands, noise-shaped ellipse 0.6 × 0.35 m) → sheen 0.3, value −8 %, bump × 0.5.
+- `cell_bg.jpg` (compact art cells) = a crop of the rug's **dark-red field corner + black border** under soft light,
+  low contrast (motif contrast ≤ 1.6:1 there) so sprites stay readable.
+
+### Gear coverage — every unit rendered, in scene and in close-up
+| Kind | Stage sprite(s) | Hero (close-up) | Thumbnail |
+|---|---|---|---|
+| head × 6 families | in place on cab | frontal ortho panel, rendered caps of the family knob type | 3/4 view |
+| cab × 3 families × 3 sizes | in place | frontal ortho 2x size per family (3) | per family, 2x |
+| rack 1U (MOD/DLY/RVB) | 3 slots in the case | 1 hero (display text live) | 1 shared |
+| PRE × 2, DST × 4, NR, EQ | in place on the deck | **top-down ortho** of the pedal (new: stompboxes now have a hero; the face knob row keeps extra params) | 3/4 view each |
+| treadle (WAH, VOL) | 9 rocker frames each | top-down ortho, rocker at mid; value live | 1 each (WAH toe-down, VOL heel-down) |
+| Guitarra / Salida | baked in plate | — | — |
+- `SceneUnit.qml` keeps one path (RenderUnit); the 2B fallback is removed in 2C.14 once every key exists.
+- Close-up: `faces/Hero.qml` for every kind; **all close-up knobs use `KnobSprite`** (family knob type, 2× layers), with
+  the live value arc kept (thin, block colour; it is live data and the legibility cue), value pill unchanged. EQ faders:
+  rendered `fader_thumb.png` on the rendered slots. Hero size: ≤ `face_max_h` 344 px → rendered at 688 px tall (2×).
+- Knob layers: cap rendered under a **rotation-invariant** rig: coaxial soft area light (behind the camera, on the
+  knob axis) + an **emissive torus ring light** around the axis at ~55° elevation (Strength tuned so knurl ridges and the
+  top bevel get a specular ring) + world 0; no dome. The fixed `light` layer keeps the key direction as before. 4 types
+  × cap colours from the family table; 256 px per layer (512 for the hero-size `pointer`/`skirted` if 256 shows
+  softness at 2×).
+
+### Thumbnails ("iconos de cada dispositivo")
+- Render: per unit key, 3/4 view (camera 30° down, 25° yaw), transparent background, soft studio light (key/fill/rim
+  `product` ratio 5:1:1.5 at 3200 K so they match the room's warmth), contact shadow only (shadow catcher), 128 × 128 px
+  PNG, auto-cropped then padded square. Manifest: `units[key].thumb`.
+- `ChainStrip.qml` chip: `[state dot 8][thumb 24][4][BLOCK label]` — chip height stays `chip_h` 32; the glyph is
+  replaced by the thumb (`Image`, `sourceSize` 48, `mipmap: true`, `asynchronous: true`). OFF: thumb opacity 0.45,
+  label `ink_soft`, dot `led_off`. Fallback when a thumb is missing: the old glyph (no empty hole).
+- `CloseUp.qml` header (the effect picker button) and each **picker row**: thumbnail 32 px of the family that effect maps
+  to (`art_for(block, effect)` already gives kind/family → `unit_key`), then name + desc as now.
+- `ArtCell.qml` (compact) = `cell_bg.jpg` + the unit's stage sprite (already rendered); no glyph.
+- Accessibility: thumbnails are decorative (`Accessible.ignored: true`); chips and rows keep their text and existing
+  accessible names; contrast rules apply to the label, not the thumb. Glyph icons stay for icon-only buttons.
+
+### Cables v3 — natural curves on the rug (replaces "Cables (QML, Wire.qml rewritten)" routing; shading/width rules kept)
+- Geometry in **metres on the floor/deck planes**, projected to stage units with the same camera as the renders.
+  `app/art.py` gains pure `project(p, cam)` (the maths of `rig.proj`, moved here; `rig.py` imports it so there is one
+  copy) and `cable_path(a, b, kind, i) -> [(u, v, w)]` (24 samples, w = cable width at that depth). Manifest `camera`
+  gains `{f_mm, sensor_mm, loc, pitch_deg, shift_y, px_per_su}`; unit anchors gain world points `in_w`/`out_w`.
+- Shapes: **drop** from a jack = short sag (quadratic, 4–8 cm) down to the plane; **floor run** = cubic Bézier in the
+  floor plane from the drop point to the target's drop point, control points at ⅓ and ⅔ pushed sideways by a bow of
+  12–20 % of the length, sign and size from `(i · 0.618) mod 1` (deterministic) so parallel cables fan out; back-line
+  cables hang down behind the stand leg/cab side (vertical quadratic sag) then join the floor run; **patch** between
+  adjacent pedals = U-sag on the deck plane in front of the pair, right-angle plugs.
+- QML `Wire.qml` draws `PathPolyline` from `cable_path` (bridge passes the point list per link), 3 strokes as before,
+  width per vertex approximated by 3 segments of different `strokeWidth` (near/mid/far), contact shadow stroke only on
+  floor samples. Reorder: links recompute; opacity dip unchanged.
+- Test: endpoints equal the projected jack anchors; no floor sample above 1 cm; no two consecutive segments turn
+  > 35° (no right angles); same input → same points.
+
+### Tokens (theme.py additions; existing unchanged)
+`wood_lo "#2a160b"`, `wood_hi "#7a4a2a"` (wall), `floor_lo "#1e0f08"`, `floor_hi "#5a3420"`, `rug_red "#8c1c17"`,
+`rug_red_dk "#4a0e0c"`, `rug_black "#141010"`, `panel_cloth "#3a2a20"`, `rubber "#0e0f10"`, `cone "#16171a"`, plus the
+models' loose metals mapped to existing `metal`/`metal_dark`/`jack`. `stage_wall`/`stage_wall_hi`/`stage_mat` stop being
+render inputs (kept for the empty-state QML fallback). Contrast of the chip/picker labels is unchanged (they sit on glass).
+
+### Budget (estimate; enforced by the audit task)
+| Set | Count | Each | Total |
+|---|---|---|---|
+| plate.jpg (q 90, wood + rug = more entropy) | 1 | 450–650 KB | 0.65 MB |
+| cell_bg.jpg | 1 | 40 KB | 0.04 |
+| stage sprites (heads 6, cabs 9, rack 3, pedals 8) | 26 | 30–180 KB | 2.4 |
+| treadle frames | 18 | 50 KB | 0.9 |
+| lit patches | ~30 | 5 KB | 0.15 |
+| knob layers (4 types × ~4 colours × 3 + shadows, some 512 px) | ~50 | 25 KB | 1.3 |
+| heroes (JPEG q 88) + their lit patches | 18 | 150 KB | 2.7 |
+| thumbnails | ~23 | 15 KB | 0.35 |
+| plugs, fader thumb, glare | 7 | 15 KB | 0.1 |
+| **total** | | | **≈ 8.6 MB (cap 12 MB)** |
+Render time (RTX 3060 OptiX device, OIDN): plate ≈ 2 min; `all` ≈ 30–40 min; slice ≈ 6 min.
+
+### Copy (Spanish)
+No new visible text. Accessible names of chips unchanged ("DST: Lazaro, apagado" style from 2B).

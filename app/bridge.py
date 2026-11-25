@@ -3,7 +3,7 @@ import copy
 
 from PyQt6.QtCore import QObject, QVariant, pyqtProperty, pyqtSignal, pyqtSlot
 
-from art import art_for
+from art import art_for, cable_path, unit_key
 from chat import system_prompt
 from model import effects_for, free_slots, g, slot_matches, snap_label
 
@@ -52,8 +52,10 @@ def unit_view(preset, block):
             named.append((p["name"], v))
     mini = knobs[:3]
     desc = (info or {}).get("desc", "")
+    art = art_for(block, blk["effect"], desc)
     return {"effect": blk["effect"], "on": bool(blk["on"]), "desc": desc, "mini": mini, "knobs": knobs, "labels": labels,
-            "display": rack_display(block, named)[0], "displayShort": rack_display(block, named)[1], **art_for(block, blk["effect"], desc)}
+            "display": rack_display(block, named)[0], "displayShort": rack_display(block, named)[1], **art,
+            "key": unit_key(art["kind"], art["family"], art["speakers"], block)}
 
 
 def chain_view(preset):
@@ -86,7 +88,7 @@ class Board(QObject):
         self.names, self._key = {}, None
         self._open, self._loading, self._guard, self._busy = False, False, "", ""
         self._status, self._statusError, self._scanStatus, self._scanError = "", False, "Leyendo la pedalera…", False
-        self._order, self._units, self._params, self._values, self._effects = list(g.BLOCKS), {}, [], {}, []
+        self._order, self._units, self._params, self._values, self._effects, self._effectKeys = list(g.BLOCKS), {}, [], {}, [], []
         self._selected, self._name, self._slot, self._slotLabel = wb.selected_block, "", -1, ""
         p = self.pedal
         p.slot_name.connect(self.names.__setitem__)
@@ -109,6 +111,7 @@ class Board(QObject):
     order, units = _prop(QVariant, "order", chainChanged), _prop(QVariant, "units", chainChanged)
     selected, params = _prop(str, "selected", selectedChanged), _prop(QVariant, "params", paramsChanged)
     values, effects = _prop(QVariant, "values", valuesChanged), _prop(QVariant, "effects", effectsChanged)
+    effectKeys = _prop(QVariant, "effectKeys", effectsChanged)  # unit_key of each picker row, parallel to `effects`
 
     @pyqtProperty(bool, notify=stateChanged)
     def dirty(self):
@@ -173,7 +176,9 @@ class Board(QObject):
         if key != self._key:  # delegates survive drags: params/effects only change with block or effect
             self._key = key
             self._params = params_view(*key)
-            self._effects = [snap_label(e, i) for e, i in effects_for(self._selected)]
+            ef = effects_for(self._selected)
+            self._effects = [snap_label(e, i) for e, i in ef]
+            self._effectKeys = [unit_key(**{k: a[k] for k in ("kind", "family", "speakers")}, block=self._selected) for a in (art_for(self._selected, i["name"], i.get("desc", "")) for _, i in ef)]
             self.paramsChanged.emit()
             self.effectsChanged.emit()
         if blk["params"] != self._values or not self._values:
@@ -182,6 +187,10 @@ class Board(QObject):
         self.stateChanged.emit()
 
     # --- view -> model ---
+    @pyqtSlot(float, float, float, float, int, "QVariantList", result="QVariantList")
+    def cable(self, x0, y0, x1, y1, lane, rects):
+        return [[x, y] for x, y in cable_path((x0, y0), (x1, y1), [tuple(r) for r in rects], lane)]
+
     @pyqtSlot(int)
     def openSlot(self, slot): self.wb.request_open(slot)
 

@@ -58,7 +58,14 @@ Item {
                 visible: !cs.skeleton
                 anchors.centerIn: parent; spacing: 4
                 Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: chip.on ? chip.col : T.led_off }
-                Text { text: T.glyphs[chip.modelData] || ""; font.family: T.icon_font; font.pixelSize: 14; color: chip.on ? chip.col : T.ink_soft; anchors.verticalCenter: parent.verticalCenter }
+                Image {  // rendered device thumb (same models); glyph while the manifest has none
+                    readonly property var u: R.units && chip.info ? R.units[chip.info.key] : undefined
+                    visible: u !== undefined && u.thumb !== undefined
+                    source: visible ? T.render_dir + u.thumb : ""; sourceSize: Qt.size(48, 48); width: 24; height: 24; mipmap: true; asynchronous: true
+                    opacity: chip.on ? 1 : 0.45; anchors.verticalCenter: parent.verticalCenter
+                }
+                Text { visible: !(R.units && chip.info && R.units[chip.info.key] !== undefined && R.units[chip.info.key].thumb !== undefined)
+                    text: T.glyphs[chip.modelData] || ""; font.family: T.icon_font; font.pixelSize: 14; color: chip.on ? chip.col : T.ink_soft; anchors.verticalCenter: parent.verticalCenter }
                 Text { visible: cs.cw >= 64; text: chip.modelData; font.pixelSize: T.font_small; font.weight: Font.DemiBold; font.letterSpacing: T.track_code; font.family: T.font
                     color: chip.on ? chip.col : T.ink_soft; anchors.verticalCenter: parent.verticalCenter }
             }

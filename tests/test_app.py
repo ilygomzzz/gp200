@@ -109,7 +109,7 @@ class QmlSmoke(unittest.TestCase):
         eng, warnings = QQmlApplicationEngine(), []
         eng.warnings.connect(lambda ws: warnings.extend(w.toString() for w in ws))
         ctx = eng.rootContext()
-        for n, o in (("T", theme.qml_tokens()), ("board", board), ("slotChat", bridge.ChatView(hub, wb)),
+        for n, o in (("T", theme.qml_tokens()), ("R", __import__("art").load_manifest(theme.render_dir + "/manifest.json")), ("board", board), ("slotChat", bridge.ChatView(hub, wb)),
                      ("globalChat", bridge.ChatView(hub, wb, True)), ("pedal", p)):
             ctx.setContextProperty(n, o)
         eng.load(QUrl.fromLocalFile(str(gp200_app.QML)))

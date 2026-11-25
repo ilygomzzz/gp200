@@ -64,8 +64,13 @@ chassis = {
 # rig scene (spec 004 part B); stage_w/stage_h/chip_h in stage units / px
 stage_wall, stage_wall_hi, stage_mat, stage_horizon = "#0c121a", "#3a3326", "#101214", 0.58  # hi = warm key light
 board_tolex, rail = "#1c1d20", "#8c949b"
+# render-only palette (2C revision: wooden room, rug, rubber); not exposed to QML
+wood_lo, wood_hi, floor_lo, floor_hi = "#2a160b", "#7a4a2a", "#1e0f08", "#5a3420"
+rug_red, rug_red_dk, rug_black, panel_cloth, rubber, cone = "#8c1c17", "#4a0e0c", "#141010", "#3a2a20", "#0e0f10", "#16171a"
 tex_tolex, tex_powder, tex_brushed, tex_grille, tex_tread, tex_mat, tex_shadow, tex_spot = 0.18, 0.07, 0.2, 0.45, 0.14, 0.14, 0.6, 0.3
 stage_w, stage_h, chip_h = 1600, 520, 32
+cable_hi, cable_shadow, sel_pool, ghost_op = "#4a4d55", "#000000aa", 0.35, 0.4  # rendered-art cables / selection light pool / ghost units
+render_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "render")
 tex_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "textures")
 face_hi, face_lo, nameplate = "#1fffffff", "#2e000000", "#e614171a"  # enamel overlay + dark print band
 led_off, track_on_face, tick = "#73000000", "#4d14171a", "#9914171a"
@@ -116,8 +121,9 @@ def qml_tokens():
              "s5 s6 r_plate r_card r_tile r_pill glass bg glass_alpha chassis_base cable jack metal metal_dark knob_cap knob_cap_hi "
              "knob_skirt knob_knurl ink_dark fx bevel_hi shadow scrim pilot ok meter_lo meter_hi font_value cell_w cell_h cell_gap knob_big knob_mini "
              "w_wide w_medium motion face_hi face_lo nameplate led_off track_on_face tick knob_face face_max_h r_unit track_code chassis stage_wall stage_wall_hi stage_mat stage_horizon board_tolex rail "
-             "tex_tolex tex_powder tex_brushed tex_grille tex_tread tex_mat tex_shadow tex_spot stage_w stage_h chip_h").split()
+             "tex_tolex tex_powder tex_brushed tex_grille tex_tread tex_mat tex_shadow tex_spot stage_w stage_h chip_h cable_hi cable_shadow sel_pool ghost_op").split()
     out = {n: _qml(globals()[n]) for n in names}
     out["tex_dir"] = QUrl.fromLocalFile(tex_dir).toString() + "/"
+    out["render_dir"] = QUrl.fromLocalFile(render_dir).toString() + "/"
     out.update({k: v if motion else 0 for k, v in durations.items()})
     return out

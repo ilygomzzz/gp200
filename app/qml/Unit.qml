@@ -44,7 +44,7 @@ FocusScope {
     }
     Rectangle { anchors.fill: parent; radius: T.r_unit; color: area.containsMouse && !u.dragging ? T.sel_fill : "transparent"
         border.width: u.selected || u.activeFocus ? 2 : 0; border.color: T.accent; opacity: u.selected ? 1 : 0.6 }
-    Stompbox { visible: u.ghost; block: u.block; ghost: true }
+    Rectangle { visible: u.ghost; anchors.fill: parent; anchors.margins: 8; radius: 6; color: "transparent"; border.width: 1; border.color: T.ink_off; opacity: T.ghost_op }  // ghost: outline in place
     ArtCell { visible: !u.ghost; block: u.block; info: u.info; on: u.on }
     Text {
         visible: !u.ghost
